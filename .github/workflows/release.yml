@@ -1,0 +1,83 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.0.app
+      - name: Version
+        shell: bash
+        run: |
+          version=$(cat VERSION)
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            [[ "$GITHUB_REF_NAME" == "v$version" ]] || { echo 'Tag must match VERSION'; exit 1; }
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "BUILD=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+      - name: Build and test
+        run: |
+          ./build.sh --no-install
+          ./scripts/test.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-unsigned
+          path: build/ClaudePersonas-*.zip
+  publish:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: macos-15
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: release-unsigned
+          path: build
+      - name: Sign, publish, and pin cask
+        shell: bash
+        env:
+          CLAUDE_PERSONAS_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          archive="build/ClaudePersonas-$version.zip"
+          test -n "$CLAUDE_PERSONAS_SIGNING_KEY"
+          ditto -x -k "$archive" build/unpacked
+          bin=build/unpacked/ClaudePersonas.app/Contents/MacOS/ClaudePersonas
+          "$bin" --sign-update "$archive" > "$archive.sig"
+          "$bin" --verify-update "$archive" "$archive.sig"
+          shasum -a 256 "$archive" > build/sha256.txt
+          awk -v v="$version" '/^## / { on = ($2 == v); next } on { print }' CHANGELOG.md > build/notes.md
+          cat >> build/notes.md <<'NOTES'
+
+          Install with Homebrew:
+          ```sh
+          brew tap macfika/claude-personas https://github.com/macfika/claude-personas
+          brew install --cask macfika/claude-personas/claude-personas
+          ```
+          This release is ad-hoc signed, not notarized by Apple. Account data is preserved on uninstall.
+          NOTES
+          gh release create "$GITHUB_REF_NAME" "$archive" "$archive.sig" build/sha256.txt --title "Claude Personas $version" --notes-file build/notes.md --verify-tag
+          python3 scripts/update-cask.py "$version" "$archive"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Casks/claude-personas.rb
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update Homebrew cask to $version"
+            git push origin HEAD:main
+          fi

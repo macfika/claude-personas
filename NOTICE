@@ -1,0 +1,16 @@
+Claude Personas
+Copyright 2026 macfika (modifications).
+
+This product includes software derived from MultiClaude:
+https://github.com/QuentinCar0n/multiclaude
+Upstream baseline: dfb986a16b02b07d0b45d07fbed89a18ab52e396
+Original project by Quentin Caron / Soma Labs (https://somalabs.me).
+Upstream software is licensed under the Apache License, Version 2.0.
+A copy of that license is included in LICENSE.
+
+Modifications include source organization, application identity and branding,
+independent update signing and release infrastructure, Homebrew packaging,
+and safety and robustness changes. Changed source files carry notices.
+
+Claude is a trademark of Anthropic, PBC. This project is not affiliated
+with or endorsed by Anthropic. This notice does not modify the license.
