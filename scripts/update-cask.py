@@ -25,7 +25,7 @@ Path('Casks/claude-personas.rb').write_text(f'''cask "claude-personas" do
   end
 
   auto_updates true
-  depends_on macos: ">= :sequoia"
+  depends_on macos: :sequoia
 
   app "ClaudePersonas.app"
 
