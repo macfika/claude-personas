@@ -11,5 +11,9 @@ for suite in update version profiles signin launchers signature; do
   "$bin" "--selftest-$suite"
 done
 codesign --verify --deep --strict build/ClaudePersonas.app
-lipo "$bin" -verify_arch arm64 x86_64
+architectures=$(lipo -archs "$bin")
+for architecture in arm64 x86_64; do
+  [[ " $architectures " == *" $architecture "* ]] || { echo "Missing $architecture slice" >&2; exit 1; }
+done
+echo "Verified architectures: $architectures"
 plutil -lint build/ClaudePersonas.app/Contents/Info.plist
