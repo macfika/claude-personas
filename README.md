@@ -54,6 +54,8 @@ brew upgrade --cask macfika/claude-personas/claude-personas
 
 完整对照、边界和人工验收步骤见 [功能对照表](docs/feature-parity.md)。真实双账号登录、Google/SSO 回调、Claude 实际更新后的恢复，以及应用自更新替换重启仍需端到端验证；不能把通过自测理解为这些操作已经实测成功。
 
+已完成的构建、93 项自测、演示界面、正式包 Homebrew 安装/卸载及隔离副本签名更新检查，见 [0.1.0 验证记录](docs/validation.md)。
+
 ## 数据与隐私
 
 配置列表和设置存储在应用偏好域 `com.macfika.claude-personas`。默认账号数据位于 `~/Library/Application Support/Claude`；其他配置通常位于同级的 `Claude-<名称>`。**Remove from List** 保留数据目录。彻底删除某个配置前，请先打开其数据目录、退出该配置，再从列表移除并自行处理目录。

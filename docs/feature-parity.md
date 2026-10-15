@@ -59,7 +59,8 @@ codesign --verify --deep --strict build/ClaudePersonas.app
 ### 安装、默认数据与导入
 
 - [ ] 从 Release ZIP 解压安装，首次打开的 Gatekeeper 提示与 README 一致；没有脚本自动删除 quarantine。
-- [ ] 从干净的 Homebrew tap 安装，应用版本及路径正确，再执行 upgrade 检查。
+- [x] 从本项目 Homebrew tap 下载正式发布包，安装到临时应用目录，验证版本、架构与签名后卸载。
+- [ ] 从已有旧版本执行 Homebrew upgrade，检查升级后的配置数据和运行行为。
 - [ ] 默认配置能够打开原有 Claude 数据；首次导入符合语法的 zsh alias 和现有 Claude-* 目录。
 - [ ] 创建新 Claude-* 目录后自动发现；移除的配置不会自动回到列表，且其数据保留。
 
