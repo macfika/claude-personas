@@ -17,7 +17,7 @@ cd claude-personas
 ./scripts/test.sh
 ```
 
-默认 `./build.sh` 只构建。使用 `./build.sh --install` 才会安装到 `~/Applications` 并启动。主要产物为 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.1.0.zip`；应用可执行文件为 `Contents/MacOS/ClaudePersonas`。
+默认 `./build.sh` 只构建。使用 `./build.sh --install` 才会安装到 `~/Applications` 并启动。主要产物为 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.2.0.zip`；应用可执行文件为 `Contents/MacOS/ClaudePersonas`。
 
 SwiftUI 视图和 AppKit 集成位于 `Sources/ClaudePersonas`，没有第三方 Swift 依赖。修改优先保持简单，避免触碰官方 Claude.app 的签名内容；不要在安装或更新脚本中自动移除 quarantine。
 
@@ -52,3 +52,9 @@ Ed25519 签名验证的是发布包与项目更新密钥的关系，不能代替
 签名工具通过 `CLAUDE_PERSONAS_SIGNING_KEY` 环境变量读取私钥，`--sign-update <zip>` 输出 Base64 签名；`--verify-update <zip> <signature-file>` 使用 app 内置公钥验签。CI 将 secret 传给签名步骤。不要把私钥写进源码、日志、提交或 Release 附件，也不要在 PR 中设置它。
 
 公钥会进入构建后的应用。如果更换公钥，已安装应用不能直接信任新密钥签名的更新；需要单独设计迁移路径，不能只替换公钥文件就宣称兼容。
+
+## 界面翻译
+
+界面文案位于 `Sources/ClaudePersonas/Resources/<语言>.lproj/Localizable.strings`，五种语言的 key 必须一致。通过 `L("English source text", ...)` 取值，动态参数使用 `%@`，需要调整顺序时使用 `%1$@` 等位置参数；不要拼接用户内容作为 key。用户配置名、路径和 shell alias 不参与翻译。
+
+`--selftest-localization` 检查语言回退、选择持久化、资源覆盖及格式参数。完整构建和自测仍使用 `./build.sh --no-install` 和 `./scripts/test.sh`。演示时可设置 `CLAUDE_PERSONAS_DEMO=1 CLAUDE_PERSONAS_LANGUAGE=ja`，支持 `zh-Hans`、`zh-Hant`、`ja`、`ko`、`en` 和 `system`；此环境变量仅在演示模式下生效。
