@@ -77,7 +77,7 @@ cd claude-personas
 ./scripts/test.sh
 ```
 
-`./build.sh` 默认也只构建，输出 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.2.0.zip`。只有显式执行 `./build.sh --install` 才安装到 `~/Applications` 并启动。
+`./build.sh` 默认也只构建，输出 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.2.1.zip`。只有显式执行 `./build.sh --install` 才安装到 `~/Applications` 并启动。
 
 代码位于 [Sources/ClaudePersonas](Sources/ClaudePersonas)。可使用 Xcode 打开 `Package.swift` 编辑与调试；可分发的菜单栏应用请使用 `build.sh` 打包。贡献及发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 

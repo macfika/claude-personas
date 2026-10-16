@@ -17,7 +17,7 @@ cd claude-personas
 ./scripts/test.sh
 ```
 
-默认 `./build.sh` 只构建。使用 `./build.sh --install` 才会安装到 `~/Applications` 并启动。主要产物为 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.2.0.zip`；应用可执行文件为 `Contents/MacOS/ClaudePersonas`。
+默认 `./build.sh` 只构建。使用 `./build.sh --install` 才会安装到 `~/Applications` 并启动。主要产物为 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.2.1.zip`；应用可执行文件为 `Contents/MacOS/ClaudePersonas`。
 
 SwiftUI 视图和 AppKit 集成位于 `Sources/ClaudePersonas`，没有第三方 Swift 依赖。修改优先保持简单，避免触碰官方 Claude.app 的签名内容；不要在安装或更新脚本中自动移除 quarantine。
 
