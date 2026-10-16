@@ -10,7 +10,7 @@ import ServiceManagement
 import Carbon.HIToolbox
 import CryptoKit
 
-let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.2.0"
+let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.2.1"
 let websiteURL = URL(string: "https://github.com/macfika/claude-personas")!
 let supportURL = URL(string: "https://github.com/macfika/claude-personas/issues")!
 let claudeBundleID = "com.anthropic.claudefordesktop"

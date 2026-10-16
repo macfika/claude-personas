@@ -9,6 +9,10 @@ struct LanguagePickerRow: View {
             Badge(on: true) {
                 Image(systemName: "globe").font(.system(size: 12, weight: .medium))
             }
+            Text(L("Language"))
+                .font(.system(size: 13))
+                .foregroundStyle(.primary)
+            Spacer(minLength: 4)
             Picker(L("Language"), selection: $localization.language) {
                 ForEach(AppLanguage.allCases) { language in
                     Text(language == .system ? L("Follow System") : language.displayName)
@@ -16,9 +20,12 @@ struct LanguagePickerRow: View {
                 }
             }
             .pickerStyle(.menu)
+            .labelsHidden()
+            .fixedSize()
             .font(.system(size: 13))
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
+        .modifier(HoverBackground(radius: 8))
     }
 }
