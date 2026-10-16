@@ -15,19 +15,19 @@ enum Setting: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var title: String {
+    @MainActor var title: String {
         switch self {
-        case .launchAtLogin: "Launch at Login"
-        case .autoUpdate: "Update Claude Personas Automatically"
-        case .routeSignIn: "Sign In in Each Account's Window"
-        case .reopenAfterUpdate: "Reopen After Claude Updates"
-        case .shortcut: "Keyboard Shortcut"
-        case .profileShortcuts: "Profile Shortcuts"
-        case .showActive: "Show Active Account in Menu Bar"
-        case .showCount: "Show Count in Menu Bar"
-        case .coloredIcon: "Colored Menu Bar Icon"
-        case .dockApps: "App for Each Profile"
-        case .quitWithApp: "Quit Profiles with Claude Personas"
+        case .launchAtLogin: L("Launch at Login")
+        case .autoUpdate: L("Update Claude Personas Automatically")
+        case .routeSignIn: L("Sign In in Each Account's Window")
+        case .reopenAfterUpdate: L("Reopen After Claude Updates")
+        case .shortcut: L("Keyboard Shortcut")
+        case .profileShortcuts: L("Profile Shortcuts")
+        case .showActive: L("Show Active Account in Menu Bar")
+        case .showCount: L("Show Count in Menu Bar")
+        case .coloredIcon: L("Colored Menu Bar Icon")
+        case .dockApps: L("App for Each Profile")
+        case .quitWithApp: L("Quit Profiles with Claude Personas")
         }
     }
 
@@ -47,10 +47,10 @@ enum Setting: String, CaseIterable, Identifiable {
         }
     }
 
-    var hint: String? {
+    @MainActor var hint: String? {
         switch self {
         case .shortcut: "⌃⌥⌘M"
-        case .profileShortcuts: "⌃⌥1 to 9"
+        case .profileShortcuts: L("⌃⌥1 to 9")
         default: nil
         }
     }

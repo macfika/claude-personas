@@ -43,6 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         engine.onPanelHotKey = { [weak self] in
             if let b = self?.item.button { PanelController.shared.toggle(below: b) }
         }
+        Localization.shared.onChange = { [weak self] in self?.refreshIcon() }
         engine.boot()
         refreshIcon()
         // Preview hook for screenshots: CLAUDE_PERSONAS_PREVIEW=panel|settings|about
@@ -76,7 +77,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let b = item.button else { return }
         let engine = Engine.shared
         let count = engine.runningCount
-        let img = NSImage(systemSymbolName: "asterisk", accessibilityDescription: "Claude Personas")
+        let img = NSImage(systemSymbolName: "asterisk", accessibilityDescription: L("Claude Personas"))
         // While a Claude window is in front, the menu bar names its account in the profile's color.
         let front = engine.isOn(.showActive) ? engine.profiles.first { $0.id == engine.frontID } : nil
         if let front {
@@ -94,6 +95,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             b.title = count > 0 && engine.isOn(.showCount) ? " \(count)" : ""
         }
+        b.toolTip = L("Claude Personas") + " — " + L("%@ running", String(count))
+        b.setAccessibilityLabel(b.toolTip)
         b.font = .monospacedDigitSystemFont(ofSize: 12, weight: .medium)
     }
 }

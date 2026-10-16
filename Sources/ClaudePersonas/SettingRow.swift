@@ -28,6 +28,6 @@ struct SettingRow: View {
         .modifier(HoverBackground(radius: 8))
         }
         .buttonStyle(.plain)
-        .accessibilityValue(on ? "On" : "Off")
+        .accessibilityValue(on ? L("On") : L("Off"))
     }
 }

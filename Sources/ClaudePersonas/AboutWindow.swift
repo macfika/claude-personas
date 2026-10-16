@@ -14,7 +14,7 @@ enum AboutWindow {
 
     static func show() {
         if window == nil {
-            let w = AboutWindowType(contentRect: NSRect(x: 0, y: 0, width: 620, height: 330),
+            let w = AboutWindowType(contentRect: NSRect(x: 0, y: 0, width: 620, height: 360),
                                     styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
                                     backing: .buffered, defer: false)
             w.titlebarAppearsTransparent = true

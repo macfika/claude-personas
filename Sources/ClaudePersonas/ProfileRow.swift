@@ -25,13 +25,13 @@ struct ProfileRow: View {
                 }
             }
             if editing == profile.id {
-                NameField(text: profile.name, placeholder: "Profile name",
+                NameField(text: profile.name, placeholder: L("Profile name"),
                           onCommit: { engine.rename(profile, to: $0); editing = nil },
                           onCancel: { editing = nil })
             } else {
                 Text(profile.name).font(.system(size: 13)).foregroundStyle(.primary.opacity(on ? 1 : 0.75))
                 if profile.isDefault {
-                    Text("Default").font(.system(size: 10)).foregroundStyle(.tertiary)
+                    Text(L("Default")).font(.system(size: 10)).foregroundStyle(.tertiary)
                 }
                 if let hint = engine.shortcutHint(for: profile) {
                     Text(hint).font(.system(size: 10)).foregroundStyle(.tertiary)
@@ -39,16 +39,16 @@ struct ProfileRow: View {
             }
             Spacer(minLength: 4)
             if on && hover {
-                Button("Quit \(profile.name)", systemImage: "xmark.circle.fill") { engine.quit(profile) }
+                Button(L("Quit %@", profile.name), systemImage: "xmark.circle.fill") { engine.quit(profile) }
                     .labelStyle(.iconOnly)
                     .buttonStyle(.plain)
                     .font(.system(size: 14))
                     .foregroundStyle(.secondary)
                     .contentShape(Circle())
 
-                    .help("Quit \(profile.name)")
+                    .help(L("Quit %@", profile.name))
             } else if on {
-                Text(engine.frontID == profile.id ? "Active" : "Running").font(.system(size: 10)).foregroundStyle(profile.tint)
+                Text(engine.frontID == profile.id ? L("Active") : L("Running")).font(.system(size: 10)).foregroundStyle(profile.tint)
             }
         }
         .padding(.horizontal, 8)
@@ -61,60 +61,60 @@ struct ProfileRow: View {
             if !on { PanelController.shared.close() }
         }
         .accessibilityAddTraits(.isButton)
-        .accessibilityLabel("\(profile.name), \(on ? "running" : "closed")")
+        .accessibilityLabel(on ? L("%@, running", profile.name) : L("%@, closed", profile.name))
         .accessibilityAction { engine.open(profile) }
         .contextMenu {
-            Button(on ? "Show \(profile.name)" : "Open \(profile.name)") { engine.open(profile) }
-            if on { Button("Quit \(profile.name)") { engine.quit(profile) } }
-            Button("Sign In to \(profile.name)…") { Dialogs.signIn(profile) }
-            Button("Open Claude Code in Terminal") { engine.openClaudeCode(profile) }
-            Toggle("Open When Claude Personas Starts", isOn: Binding(get: { profile.openAtLaunch == true },
+            Button(on ? L("Show %@", profile.name) : L("Open %@", profile.name)) { engine.open(profile) }
+            if on { Button(L("Quit %@", profile.name)) { engine.quit(profile) } }
+            Button(L("Sign In to %@…", profile.name)) { Dialogs.signIn(profile) }
+            Button(L("Open Claude Code in Terminal")) { engine.openClaudeCode(profile) }
+            Toggle(L("Open When Claude Personas Starts"), isOn: Binding(get: { profile.openAtLaunch == true },
                                                                  set: { engine.setOpenAtLaunch(profile, $0) }))
             Divider()
-            Button("Rename…") { editing = profile.id }
-            Menu("Color") {
+            Button(L("Rename…")) { editing = profile.id }
+            Menu(L("Color")) {
                 ForEach(Palette.colors.indices, id: \.self) { i in
-                    Toggle(Palette.colors[i].name, isOn: Binding(get: { (profile.color ?? 0) == i },
+                    Toggle(L(Palette.colors[i].name), isOn: Binding(get: { (profile.color ?? 0) == i },
                                                                  set: { _ in engine.setColor(profile, i) }))
                 }
             }
-            Button("Move Up") { engine.move(profile, by: -1) }
-            Button("Move Down") { engine.move(profile, by: 1) }
+            Button(L("Move Up")) { engine.move(profile, by: -1) }
+            Button(L("Move Down")) { engine.move(profile, by: 1) }
             Divider()
-            Button("Show Data Folder in Finder") { NSWorkspace.shared.activateFileViewerSelecting([profile.folderURL]) }
+            Button(L("Show Data Folder in Finder")) { NSWorkspace.shared.activateFileViewerSelecting([profile.folderURL]) }
             if let app = engine.launcherURL(profile) {
                 if Dock.contains(app) {
-                    Button("Remove \(profile.dockAppName) from Dock") { engine.removeFromDock(profile) }
+                    Button(L("Remove %@ from Dock", profile.dockAppName)) { engine.removeFromDock(profile) }
                 } else {
-                    Button("Add \(profile.dockAppName) to Dock") { engine.addToDock(profile) }
+                    Button(L("Add %@ to Dock", profile.dockAppName)) { engine.addToDock(profile) }
                 }
-                Button("Rename App…") { Dialogs.renameApp(profile) }
-                Button("Show App in Finder") { NSWorkspace.shared.activateFileViewerSelecting([app]) }
+                Button(L("Rename App…")) { Dialogs.renameApp(profile) }
+                Button(L("Show App in Finder")) { NSWorkspace.shared.activateFileViewerSelecting([app]) }
             } else {
-                Button("Add \(profile.dockAppName) to Dock") { engine.addToDock(profile) }
+                Button(L("Add %@ to Dock", profile.dockAppName)) { engine.addToDock(profile) }
             }
-            Button("Copy Shell Alias") {
+            Button(L("Copy Shell Alias")) {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(profile.shellAlias, forType: .string)
             }
-            Button("Copy Claude Code Alias") {
+            Button(L("Copy Claude Code Alias")) {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(profile.codeAlias, forType: .string)
             }
             Divider()
-            Menu("Copy MCP Servers From") {
+            Menu(L("Copy MCP Servers From")) {
                 let sources = engine.profiles.filter { $0.id != profile.id }.map { ($0, MCP.servers($0).count) }.filter { $0.1 > 0 }
                 if sources.isEmpty {
-                    Text("No other profile has MCP servers")
+                    Text(L("No other profile has MCP servers"))
                 }
                 ForEach(sources, id: \.0.id) { src, n in
-                    Button("\(src.name) (\(n))") { Dialogs.copyMCP(from: src, to: profile) }
+                    Button(L("%@ (%@)", src.name, String(n))) { Dialogs.copyMCP(from: src, to: profile) }
                 }
             }
-            Button("Duplicate as New Profile…") { Dialogs.duplicate(profile) }
+            Button(L("Duplicate as New Profile…")) { Dialogs.duplicate(profile) }
             if !profile.isDefault {
                 Divider()
-                Button("Remove from List") { engine.remove(profile) }
+                Button(L("Remove from List")) { engine.remove(profile) }
             }
         }
     }

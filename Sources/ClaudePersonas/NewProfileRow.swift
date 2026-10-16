@@ -16,11 +16,11 @@ struct NewProfileRow: View {
         HStack(spacing: 9) {
             Badge(on: false) { Image(systemName: "plus").font(.system(size: 12, weight: .semibold)) }
             if adding {
-                NameField(text: "", placeholder: "Profile name, then Return",
+                NameField(text: "", placeholder: L("Profile name, then Return"),
                           onCommit: { if engine.add(name: $0) { adding = false } },
                           onCancel: { adding = false })
             } else {
-                Text("New Profile").font(.system(size: 13)).foregroundStyle(.primary.opacity(0.75))
+                Text(L("New Profile")).font(.system(size: 13)).foregroundStyle(.primary.opacity(0.75))
             }
             Spacer(minLength: 4)
         }
@@ -29,7 +29,7 @@ struct NewProfileRow: View {
         .modifier(HoverBackground(radius: 8))
         .onTapGesture { adding = true }
         .accessibilityAddTraits(.isButton)
-        .accessibilityLabel("New Profile")
+        .accessibilityLabel(L("New Profile"))
         .accessibilityAction { adding = true }
     }
 }

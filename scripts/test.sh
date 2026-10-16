@@ -6,7 +6,7 @@ bin="$PWD/build/ClaudePersonas.app/Contents/MacOS/ClaudePersonas"
 test_root=$(mktemp -d "${TMPDIR:-/tmp}/claude-personas-tests.XXXXXX")
 trap 'rm -rf "$test_root"' EXIT
 export CLAUDE_PERSONAS_TEST_ROOT="$test_root"
-for suite in update version profiles signin launchers signature; do
+for suite in update version profiles signin launchers signature localization; do
   echo "Testing $suite"
   "$bin" "--selftest-$suite"
 done

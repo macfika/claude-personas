@@ -9,6 +9,7 @@ struct MenuView: View {
             MenuContent()
                 .onGeometryChange(for: CGFloat.self, of: { $0.size.height }) { contentHeight = $0 }
         }
+        .environment(\.locale, Localization.shared.locale)
         .scrollIndicators(.automatic)
         .frame(width: 300, height: min(contentHeight, max(200, (NSScreen.main?.visibleFrame.height ?? 800) - 60)))
         .onGeometryChange(for: CGSize.self, of: { $0.size }) { size in

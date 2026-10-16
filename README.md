@@ -37,7 +37,9 @@ brew upgrade --cask macfika/claude-personas/claude-personas
 3. 再次点击已运行配置会聚焦其窗口；悬停退出按钮关闭该配置；顶部开关可以全部打开或退出。
 4. 右键配置可改名、调整顺序、改颜色、打开数据目录、复制 shell alias，或从列表移除。
 
-应用界面目前使用英文。新建配置不会自动复制已有登录；**Duplicate as New Profile** 则会复制登录状态、聊天数据和设置，复制出的配置最初属于同一账号。
+应用默认跟随系统语言，支持简体中文、繁体中文、日语、韩语和英语。展开“设置 / Settings”，在“语言 / Language”中切换；选择立即生效并保存，选择“跟随系统”可恢复自动匹配。不支持的系统语言回退到英语。语言名称以各自语言显示，方便切换回来。切换界面语言不会更改配置名称、数据目录或 Claude Desktop 本身的语言。
+
+新建配置不会自动复制已有登录；**Duplicate as New Profile** 则会复制登录状态、聊天数据和设置，复制出的配置最初属于同一账号。
 
 ## 功能
 
@@ -75,7 +77,7 @@ cd claude-personas
 ./scripts/test.sh
 ```
 
-`./build.sh` 默认也只构建，输出 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.1.0.zip`。只有显式执行 `./build.sh --install` 才安装到 `~/Applications` 并启动。
+`./build.sh` 默认也只构建，输出 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.2.0.zip`。只有显式执行 `./build.sh --install` 才安装到 `~/Applications` 并启动。
 
 代码位于 [Sources/ClaudePersonas](Sources/ClaudePersonas)。可使用 Xcode 打开 `Package.swift` 编辑与调试；可分发的菜单栏应用请使用 `build.sh` 打包。贡献及发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 

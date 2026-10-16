@@ -10,7 +10,7 @@ import ServiceManagement
 import Carbon.HIToolbox
 import CryptoKit
 
-let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.1.0"
+let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.2.0"
 let websiteURL = URL(string: "https://github.com/macfika/claude-personas")!
 let supportURL = URL(string: "https://github.com/macfika/claude-personas/issues")!
 let claudeBundleID = "com.anthropic.claudefordesktop"
@@ -45,6 +45,10 @@ extension NSColor {
 func shellQuote(_ s: String) -> String { "'" + s.replacingOccurrences(of: "'", with: "'\\''") + "'" }
 
 let args = CommandLine.arguments
+if args.count == 2, args[1] == "--selftest-localization" {
+    let ok = MainActor.assumeIsolated { LocalizationTests.run() }
+    exit(ok ? 0 : 1)
+}
 if args.count == 2, args[1] == "--list" {
     // Prints each profile and whether it runs, for a quick check from the terminal.
     MainActor.assumeIsolated {
@@ -372,7 +376,7 @@ if args.count > 1 {
     Claude Personas \(appVersion)
     Usage: ClaudePersonas [--list | --check-update | --update-now |
       --selftest-update | --selftest-profiles | --selftest-signin |
-      --selftest-launchers | --selftest-version | --selftest-signature |
+      --selftest-launchers | --selftest-version | --selftest-signature | --selftest-localization |
       --sign-update FILE | --verify-update FILE SIGNATURE |
       --export-iconset DIRECTORY | --export-profile-icon FILE | --unregister-login]
     """

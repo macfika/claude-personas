@@ -16,7 +16,8 @@ final class Engine: ObservableObject {
     @Published private(set) var profiles: [Profile]
     @Published private(set) var running: [UUID: NSRunningApplication] = [:]
     @Published private(set) var frontID: UUID?     // profile of the frontmost Claude window
-    @Published private(set) var notice: String?    // one-line message at the top of the panel
+    @Published private var noticeProvider: (@MainActor () -> String)?
+    var notice: String? { noticeProvider?() } // Render again in the currently selected language.
 
     var onChange: (() -> Void)?
     var onPanelHotKey: (() -> Void)?
@@ -82,7 +83,7 @@ final class Engine: ObservableObject {
         let afterSelfUpdate = defaults.string(forKey: "updatedTo") != nil
         if let to = defaults.string(forKey: "updatedTo") {
             defaults.removeObject(forKey: "updatedTo")
-            if to == appVersion { notice = "Claude Personas updated to \(to)." }
+            if to == appVersion { noticeProvider = { L("Claude Personas updated to %@.", to) } }
         }
         if !isDemo { Updater.start() }
         // Electron instances launched with `open -n` sometimes skip the launch notification; poll as a backstop.
@@ -147,7 +148,7 @@ final class Engine: ObservableObject {
 
     func dismissNotice() {
         if signIn != nil { finishSignIn(cancelled: true) }
-        notice = nil
+        noticeProvider = nil
     }
 
     // MARK: sign-in
@@ -179,7 +180,7 @@ final class Engine: ObservableObject {
     func beginSignIn(_ p: Profile) {
         guard !isDemo, signIn == nil else { return }
         signIn = SignIn(target: p.id, logOffset: SignInLog.size())
-        notice = "Getting \(p.name) ready to sign in…"
+        noticeProvider = { L("Getting %@ ready to sign in…", p.name) }
         if !isRunning(p) { open(p) }
         signInTimer?.invalidate()
         signInTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
@@ -208,7 +209,7 @@ final class Engine: ObservableObject {
                     guard e.signIn?.target == p.id else { LinkRelay.giveBack(); return }
                     if ok {
                         e.signIn?.routing = true
-                        e.notice = "Sign in to \(p.name) now. Claude Personas sends the sign-in back to its window."
+                        e.noticeProvider = { L("Sign in to %@ now. Claude Personas sends the sign-in back to its window.", p.name) }
                         if let app = e.running[p.id] { app.unhide(); app.activate() }
                     } else {
                         e.closeOthersForSignIn(p)
@@ -222,9 +223,10 @@ final class Engine: ObservableObject {
     private func closeOthersForSignIn(_ p: Profile) {
         let others = profiles.filter { $0.id != p.id && isRunning($0) }
         signIn?.reopen = others.map(\.id)
-        let names = ListFormatter.localizedString(byJoining: others.map(\.name))
-        notice = others.isEmpty ? "Sign in to \(p.name) in its window."
-            : "Sign in to \(p.name) in its window. \(names) reopen\(others.count == 1 ? "s" : "") once you're signed in."
+        noticeProvider = {
+            others.isEmpty ? L("Sign in to %@ in its window.", p.name)
+                : L("Sign in to %@ in its window. After sign-in, these profiles will reopen: %@.", p.name, Self.profileNames(others))
+        }
         func next(_ rest: [Profile]) {
             guard let first = rest.first else { Engine.shared.open(p); return }
             Engine.shared.quitAndWait(first) { next(Array(rest.dropFirst())) }
@@ -274,12 +276,20 @@ final class Engine: ObservableObject {
         if !isOn(.routeSignIn) { LinkRelay.giveBack() }
         let reopen = profiles.filter { s.reopen.contains($0.id) && !isRunning($0) }
         reopen.forEach(open)
-        let target = profiles.first { $0.id == s.target }?.name ?? "the account"
-        if cancelled { notice = nil; return }
-        notice = "Signed in to \(target)."
-            + (reopen.isEmpty ? "" : " Reopened " + ListFormatter.localizedString(byJoining: reopen.map(\.name)) + ".")
+        let target = profiles.first { $0.id == s.target }?.name
+        if cancelled { noticeProvider = nil; return }
+        noticeProvider = {
+            L("Signed in to %@.", target ?? L("the account"))
+                + (reopen.isEmpty ? "" : " " + L("Reopened %@.", Self.profileNames(reopen)))
+        }
     }
-    func show(notice text: String) { notice = text }
+    func show(notice text: String) { noticeProvider = { text } }
+
+    private static func profileNames(_ profiles: [Profile]) -> String {
+        let formatter = ListFormatter()
+        formatter.locale = Localization.shared.locale
+        return formatter.string(from: profiles.map(\.name)) ?? profiles.map(\.name).joined(separator: ", ")
+    }
 
     // MARK: running instances
 
@@ -363,7 +373,7 @@ final class Engine: ObservableObject {
             quitAt[p.id] = nil
             open(p)
         }
-        notice = "Claude updated. Reopened " + ListFormatter.localizedString(byJoining: reopen.map(\.name)) + "."
+        noticeProvider = { L("Claude updated. Reopened %@.", Self.profileNames(reopen)) }
         onChange?()
     }
 
@@ -475,7 +485,7 @@ final class Engine: ObservableObject {
                 return
             }
             guard n <= 60 else {
-                Engine.shared.notice = "Could not close \(p.name). No profile data was changed; close its window and try again."
+                Engine.shared.noticeProvider = { L("Could not close %@. No profile data was changed; close its window and try again.", p.name) }
                 return
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { poll(n + 1) }
@@ -489,7 +499,7 @@ final class Engine: ObservableObject {
         guard !isDemo else { return }
         guard let p = newProfile(named: name), let dst = p.dir else { NSSound.beep(); return }
         let wasRunning = isRunning(source)
-        notice = "Duplicating \(source.name)…"
+        noticeProvider = { L("Duplicating %@…", source.name) }
         quitAndWait(source) {
             Task.detached {
                 let ok = Duplicate.clone(from: source.folderURL.path, to: dst)
@@ -498,9 +508,9 @@ final class Engine: ObservableObject {
                     if ok {
                         e.profiles.append(p)
                         e.save()
-                        e.notice = "Duplicated \(source.name) as \(p.name). Both are signed in to the same account until you sign one out."
+                        e.noticeProvider = { L("Duplicated %@ as %@. Both are signed in to the same account until you sign one out.", source.name, p.name) }
                     } else {
-                        e.notice = "Couldn't duplicate \(source.name). Nothing was changed."
+                        e.noticeProvider = { L("Couldn't duplicate %@. Nothing was changed.", source.name) }
                     }
                     if wasRunning { e.open(source) }
                 }
@@ -512,11 +522,14 @@ final class Engine: ObservableObject {
         guard !isDemo else { return }
         do {
             let n = try MCP.copy(from: source, to: target)
-            notice = "Copied \(n) MCP server\(n == 1 ? "" : "s") from \(source.name) to \(target.name)."
-                + (restart || !isRunning(target) ? "" : " Reopen \(target.name) to load them.")
+            let needsReopen = !restart && isRunning(target)
+            noticeProvider = {
+                L("Copied MCP servers (%@) from %@ to %@.", String(n), source.name, target.name)
+                    + (needsReopen ? " " + L("Reopen %@ to load them.", target.name) : "")
+            }
             if restart && isRunning(target) { quitAndWait(target) { Engine.shared.open(target) } }
         } catch {
-            notice = "Couldn't copy MCP servers: \(target.name)'s config file isn't valid JSON."
+            noticeProvider = { L("Couldn't copy MCP servers: %@'s config file isn't valid JSON.", target.name) }
         }
     }
 
@@ -603,7 +616,7 @@ final class Engine: ObservableObject {
         if !result.moved.isEmpty || !result.removed.isEmpty || !result.rewritten.isEmpty {
             Dock.update(moved: result.moved, removed: result.removed, refresh: result.rewritten)
         }
-        if !result.failed.isEmpty { notice = "Couldn't write the app for \(result.failed.joined(separator: ", "))." }
+        if !result.failed.isEmpty { noticeProvider = { L("Couldn't write the app for %@.", result.failed.joined(separator: ", ")) } }
     }
 
     func launcherURL(_ p: Profile) -> URL? {
@@ -622,7 +635,7 @@ final class Engine: ObservableObject {
     func addToDock(_ p: Profile) {
         if !isOn(.dockApps) { toggle(.dockApps) }
         guard let url = launcherURL(p) else { NSSound.beep(); return }
-        if !Dock.add(url) { notice = "Couldn't add \(p.dockAppName) to the Dock. Drag it there from Finder instead." }
+        if !Dock.add(url) { noticeProvider = { L("Couldn't add %@ to the Dock. Drag it there from Finder instead.", p.dockAppName) } }
     }
 
     func removeFromDock(_ p: Profile) {

@@ -35,7 +35,7 @@ struct SectionHeader: View {
         .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityValue(open ? "Expanded" : "Collapsed")
+        .accessibilityValue(open ? L("Expanded") : L("Collapsed"))
     }
 }
 

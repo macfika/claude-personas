@@ -21,6 +21,7 @@ rm build/ClaudePersonas-arm64 build/ClaudePersonas-x86_64
 "$APP/Contents/MacOS/ClaudePersonas" --export-iconset build/ClaudePersonas.iconset
 iconutil -c icns build/ClaudePersonas.iconset -o "$APP/Contents/Resources/ClaudePersonas.icns"
 cp LICENSE NOTICE "$APP/Contents/Resources/"
+cp -R Sources/ClaudePersonas/Resources/*.lproj "$APP/Contents/Resources/"
 export PERSONAS_BUILD_VERSION="$VERSION" PERSONAS_BUILD_NUMBER="$BUILD"
 /usr/bin/python3 - <<'PY'
 import os, pathlib, plistlib
@@ -32,6 +33,8 @@ info = {
     'CFBundleVersion': os.environ['PERSONAS_BUILD_NUMBER'], 'LSMinimumSystemVersion': '15.0',
     'CFBundleIconFile': 'ClaudePersonas', 'LSUIElement': True,
     'NSHighResolutionCapable': True, 'UpdatePublicKey': key,
+    'CFBundleDevelopmentRegion': 'en',
+    'CFBundleLocalizations': ['en', 'zh-Hans', 'zh-Hant', 'ja', 'ko'],
     'NSAppleEventsUsageDescription': 'Claude Personas routes Claude sign-in links to the account window that requested them.',
     'CFBundleURLTypes': [
         {'CFBundleURLName': 'Claude sign-in relay', 'CFBundleURLSchemes': ['claude'], 'LSHandlerRank': 'None'},
