@@ -102,7 +102,7 @@ codesign --verify --deep --strict build/ClaudePersonas.app
 - [ ] 从 0.2.x 使用旧 `.zip.sig` 更新通道迁移到正式 0.3.0。
 - [ ] 手动安装显示自动更新与检查入口，Homebrew 只提供 brew 命令；缺失/损坏收据禁用自更新，开发目录不可更新。
 - [ ] `--check-update` 只读，`--update-now` 不安装且返回非零。
-- [ ] 检查 0.3.0 正式 ZIP 的 Developer ID 身份、stapled 公证票据和 Gatekeeper 结果。
+- [x] 检查 0.3.0 正式 ZIP 的 Developer ID 身份、stapled 公证票据和 Gatekeeper 结果（GitHub runner 独立通过）。
 - [ ] 修改 ZIP、替换签名或使用错误公钥时拒绝安装，当前应用仍可启动。
 - [ ] 断网、下载失败、目标目录不可写时不会破坏现有应用。
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate Sparkle metadata using the existing legacy Ed25519 seed, via stdin only."""
 import base64
+import hashlib
 import os
 from pathlib import Path
 import plistlib
@@ -18,6 +19,7 @@ key = os.environ.get('CLAUDE_PERSONAS_SIGNING_KEY', '').strip()
 if len(base64.b64decode(key, validate=True)) != 32:
     raise SystemExit('UPDATE_SIGNING_KEY must contain a base64-encoded 32-byte Ed25519 seed')
 sparkle = Path(subprocess.check_output(['./scripts/fetch-sparkle.sh'], text=True).strip())
+archive_digest = hashlib.sha256(archive.read_bytes()).digest()
 version = archive.stem.removeprefix('ClaudePersonas-')
 namespace = {'sparkle': 'http://www.andymatuschak.org/xml-namespaces/sparkle'}
 with zipfile.ZipFile(archive) as bundle_archive:
@@ -46,10 +48,14 @@ with tempfile.TemporaryDirectory(prefix='personas-appcast-') as temporary:
     feed = ET.parse(generated)
     enclosure = next(node for node in feed.findall('.//enclosure') if node.attrib['url'].endswith(archive.name))
     signature = enclosure.attrib['{'+namespace['sparkle']+'}edSignature']
-    # Legacy .zip.sig and Sparkle must be exactly the same Ed25519 signature.
-    if signature != Path(str(archive) + '.sig').read_text().strip():
-        raise SystemExit('Sparkle signature does not match the legacy update signature')
-    subprocess.run([str(sparkle / 'bin/sign_update'), '--ed-key-file', '-', '--verify', str(archive), signature],
-                   input=key + '\n', text=True, check=True)
+    # CryptoKit uses hedged (non-deterministic) Ed25519 signing on macOS.
+    # Different signature bytes can both be valid for this archive and public key.
+    legacy_signature = Path(str(archive) + '.sig').read_text().strip()
+    for candidate in (legacy_signature, signature):
+        subprocess.run([str(sparkle / 'bin/sign_update'), '--ed-key-file', '-', '--verify', str(archive), candidate],
+                       input=key + '\n', text=True, check=True)
+    if hashlib.sha256(archive.read_bytes()).digest() != archive_digest or hashlib.sha256((directory / archive.name).read_bytes()).digest() != archive_digest:
+        raise SystemExit('Release archive changed during appcast generation')
     shutil.copy2(generated, root / 'build/appcast.xml')
-print('Generated build/appcast.xml; Sparkle and legacy signatures match')
+    (root / 'build/appcast-archive.sig').write_text(signature + '\n')
+print('Generated build/appcast.xml; Sparkle and legacy signatures independently verified; archive SHA256 unchanged')

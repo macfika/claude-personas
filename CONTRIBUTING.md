@@ -102,7 +102,7 @@ gh workflow run release.yml --repo macfika/claude-personas \
 
 主线 CI 负责构建和自测；推 tag 仅建立版本引用。上述显式 dispatch 使用 `archive_release`，从同 tag 的草稿下载已经签名公证的 ZIP。输入必须等于运行 ref `v0.3.0`，且对应 Release 必须仍为草稿；不要提前手动发布。
 
-CI 需要 `release` environment secret **UPDATE_SIGNING_KEY**，内容为与 `Config/update-public-key.txt` 匹配的 Base64 编码 32 字节 Ed25519 seed。此密钥与本机 Apple 签名证书各有用途。流程验证 ZIP 后，使用 seed 生成旧版 `.zip.sig` 和 Sparkle `appcast.xml`，核对两者签名完全一致，再生成 `sha256.txt`，将草稿发布为 latest，并提交同仓库 `Casks/claude-personas.rb` 的版本与 SHA-256 更新到 `main`。
+CI 需要 `release` environment secret **UPDATE_SIGNING_KEY**，内容为与 `Config/update-public-key.txt` 匹配的 Base64 编码 32 字节 Ed25519 seed。此密钥与本机 Apple 签名证书各有用途。流程验证 ZIP 后，使用 seed 生成旧版 `.zip.sig` 和 Sparkle `appcast.xml`，分别验证两种签名均被相同公钥信任，再生成 `sha256.txt`，将草稿发布为 latest，并提交同仓库 `Casks/claude-personas.rb` 的版本与 SHA-256 更新到 `main`。
 
 ```bash
 gh run list --repo macfika/claude-personas --workflow release.yml --limit 5

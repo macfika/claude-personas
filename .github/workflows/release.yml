@@ -72,6 +72,7 @@ jobs:
             mv build/previous/appcast.xml build/previous-appcast.xml
           fi
           python3 scripts/generate-appcast.py "$archive"
+          "$bin" --verify-update "$archive" build/appcast-archive.sig
           shasum -a 256 "$archive" > build/sha256.txt
           awk -v v="$version" '/^## / { on = ($2 == v); next } on { print }' CHANGELOG.md > build/notes.md
           cat >> build/notes.md <<'NOTES'

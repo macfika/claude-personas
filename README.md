@@ -103,7 +103,7 @@ cd claude-personas
 
 手动安装的自动检查默认启用，旧版明确关闭的偏好会迁移，可在设置中关闭。更新提示和安装由 Sparkle 管理；出错会在界面显示。更新重启会保留 Claude 配置窗口。`--check-update` 只读取最新发布信息，不下载或安装应用；`--update-now` 已禁用并返回非零退出码，请使用 GUI 或 brew。
 
-更新公钥位于 [Config/update-public-key.txt](Config/update-public-key.txt)。Sparkle appcast 使用原有项目 Ed25519 seed 签名，同时保留 `.zip.sig` 供 0.2.x 迁移；生成步骤核对两者签名一致，不复用 MultiClaude 的信任根。发布依赖 `release` environment 的 `UPDATE_SIGNING_KEY`，并要求正式包先通过 Developer ID、公证票据和 Gatekeeper 检查。维护者可在本机完成签名公证，再将 ZIP 交给 CI 发布，无需导出证书；具体命令见 [贡献与发布指南](CONTRIBUTING.md)。私钥绝不能提交到仓库。
+更新公钥位于 [Config/update-public-key.txt](Config/update-public-key.txt)。Sparkle appcast 使用原有项目 Ed25519 seed 签名，同时保留 `.zip.sig` 供 0.2.x 迁移；生成步骤使用相同公钥分别验证两种签名，不复用 MultiClaude 的信任根。发布依赖 `release` environment 的 `UPDATE_SIGNING_KEY`，并要求正式包先通过 Developer ID、公证票据和 Gatekeeper 检查。维护者可在本机完成签名公证，再将 ZIP 交给 CI 发布，无需导出证书；具体命令见 [贡献与发布指南](CONTRIBUTING.md)。私钥绝不能提交到仓库。
 
 ## 许可与归属
 
