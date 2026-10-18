@@ -75,17 +75,20 @@ jobs:
           python3 scripts/generate-appcast.py "$archive"
           "$bin" --verify-update "$archive" build/appcast-archive.sig
           shasum -a 256 "$archive" "build/ClaudePersonas-$version.dmg" > build/sha256.txt
-          awk -v v="$version" '/^## / { on = ($2 == v); next } on { print }' CHANGELOG.md > build/notes.md
+          cat > build/notes.md <<NOTES
+          **[下载 DMG（推荐）](https://github.com/macfika/claude-personas/releases/download/v$version/ClaudePersonas-$version.dmg)**
+
+          双击 DMG，按箭头将 Claude Personas 拖入 Applications，复制完成后从应用程序打开。之后应用会自动检查更新，也可在设置中手动检查更新。
+
+          ## 本次更新
+
+          NOTES
+          awk -v v="$version" '/^## / { on = ($2 == v); next } on { print }' CHANGELOG.md >> build/notes.md
           cat >> build/notes.md <<'NOTES'
 
-          Download the DMG for graphical installation: drag Claude Personas onto Applications, then open it from Applications. The ZIP is retained for Sparkle and Homebrew.
+          **Homebrew 用户：** 请使用 brew 更新；如改用 DMG，先退出应用并正常卸载 brew 版，设置、配置列表和账号数据会保留。登录时启动与系统权限可能需要重新启用。
 
-          Install with Homebrew:
-          ```sh
-          brew tap macfika/claude-personas https://github.com/macfika/claude-personas
-          brew install --cask macfika/claude-personas/claude-personas
-          ```
-          Developer ID signed and notarized by Apple. Manual installations use Sparkle; Homebrew installations update through brew. Account data is preserved on uninstall.
+          [安装与使用说明](https://github.com/macfika/claude-personas#readme)
           NOTES
           gh release upload "$GITHUB_REF_NAME" "$archive.sig" build/sha256.txt build/appcast.xml --clobber
           gh release edit "$GITHUB_REF_NAME" --draft=false --latest --title "Claude Personas $version" --notes-file build/notes.md
