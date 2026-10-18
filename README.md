@@ -67,7 +67,7 @@ brew uninstall --cask macfika/claude-personas/claude-personas
 
 从列表移除配置不会删除其数据。默认账号数据位于 `~/Library/Application Support/Claude`，其他配置通常位于同级的 `Claude-<名称>`。删除数据前可在配置菜单中打开对应目录确认内容。
 
-应用没有统计分析功能。管理配置和登录时会读取相关进程、配置文件、受支持的 shell alias 及 Claude 登录日志；检查更新时会连接本项目的下载服务。复制配置会同时复制其中的登录状态和聊天数据，请确认目标配置。
+应用没有统计分析功能。管理配置和登录时会读取相关进程、配置文件、受支持的 shell alias 及 Claude 登录日志；检查更新时会连接 GitHub 获取更新。复制配置会同时复制其中的登录状态和聊天数据，请确认目标配置。
 
 ## 帮助与贡献
 
