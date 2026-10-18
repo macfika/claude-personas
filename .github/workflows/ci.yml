@@ -19,7 +19,13 @@ jobs:
         run: ./build.sh --no-install
       - name: Test and verify bundle
         run: ./scripts/test.sh
+      - name: Build and verify graphical disk image
+        run: |
+          ./scripts/build-dmg.sh
+          ./scripts/verify-dmg.sh "build/ClaudePersonas-$(cat VERSION).dmg"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ClaudePersonas-ci
-          path: build/ClaudePersonas-*.zip
+          path: |
+            build/ClaudePersonas-*.zip
+            build/ClaudePersonas-*.dmg

@@ -30,3 +30,11 @@ Apple 公证已 Accepted（提交 ID `96ea9d65-5088-419b-a4a7-a48ec23f75c9`）�
 - 最终主线构建及 172 项自测：https://github.com/macfika/claude-personas/actions/runs/39129184397
 
 首次发布尝试在签名兼容性门禁被阻止：CryptoKit 会生成带随机性的有效 Ed25519 签名，不能与 Sparkle 的签名字节比较相等。改为同公钥分别验证旧签名与新签名后发布成功；临时随机 seed 回归覆盖两个不同但有效的 CryptoKit 签名，ZIP SHA-256 保持不变，无需更换密钥或重新公证。真实多账号登录、SSO 与 Claude 自身更新恢复也仍需测试账号验收。
+
+## 图形化 DMG 补充发行
+
+- DMG Apple 公证 Accepted：`2df75b6c-5b0a-4645-81e4-fe8346c21452`；stapler 与完整签名验证通过，spctl 来源为 Notarized Developer ID（本机策略 override 边界同上）。
+- 磁盘包含 Applications 符号链接、原始签名应用、720×480 点的五语言安装背景和 Installation.html。Finder 图标视图已检查应用、箭头、目标文件夹和五语言说明的位置。用户自定义 Finder 视图或显示隐藏文件的偏好可能改变显示。
+- 只读挂载后逐项比较包内 app 与原 app 的文件哈希、权限和符号链接，内容完全一致。验证工具避开会修改 app FinderInfo 的扩展名隐藏设置。
+- 仅向现有 0.3.0 Release 增加 DMG，并更新 sha256.txt；ZIP、其签名、appcast 与 Homebrew 包保持原样。
+- Homebrew 普通卸载只删除 app artifact；相同 bundle ID 的 UserDefaults 设置、配置列表及账户数据保留。登录项使用 SMAppService，系统权限由 macOS 管理，不能承诺卸载重装后自动保留。未卸载用户实际应用。

@@ -31,7 +31,7 @@ jobs:
           test "$ARCHIVE_TAG" = "$GITHUB_REF_NAME"
           test "$(gh release view "$ARCHIVE_TAG" --json isDraft --jq .isDraft)" = true
           mkdir -p build
-          gh release download "$ARCHIVE_TAG" --pattern "ClaudePersonas-${ARCHIVE_TAG#v}.zip" --dir build
+          gh release download "$ARCHIVE_TAG" --pattern "ClaudePersonas-${ARCHIVE_TAG#v}.zip" --pattern "ClaudePersonas-${ARCHIVE_TAG#v}.dmg" --dir build
       - name: Verify production signing and notarization
         run: |
           set -euo pipefail
@@ -43,9 +43,10 @@ jobs:
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")" = "$version"
           PERSONAS_TEST_APP="$PWD/$app" ./scripts/test.sh
           codesign --verify --deep --strict "$app"
-          codesign --display --verbose=2 "$app" 2>&1 | grep -q '^Authority=Developer ID Application:'
+          codesign --display --verbose=2 "$app" 2>&1 | grep '^Authority=Developer ID Application:' > /dev/null
           xcrun stapler validate "$app"
           spctl --assess --type execute --verbose "$app"
+          ./scripts/verify-dmg.sh "build/ClaudePersonas-$version.dmg" "$app" --production
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: main
@@ -73,9 +74,11 @@ jobs:
           fi
           python3 scripts/generate-appcast.py "$archive"
           "$bin" --verify-update "$archive" build/appcast-archive.sig
-          shasum -a 256 "$archive" > build/sha256.txt
+          shasum -a 256 "$archive" "build/ClaudePersonas-$version.dmg" > build/sha256.txt
           awk -v v="$version" '/^## / { on = ($2 == v); next } on { print }' CHANGELOG.md > build/notes.md
           cat >> build/notes.md <<'NOTES'
+
+          Download the DMG for graphical installation: drag Claude Personas onto Applications, then open it from Applications. The ZIP is retained for Sparkle and Homebrew.
 
           Install with Homebrew:
           ```sh

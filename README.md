@@ -10,6 +10,21 @@
 
 ## 安装
 
+### 图形安装（推荐）
+
+[**下载 Claude Personas 0.3.0 DMG**](https://github.com/macfika/claude-personas/releases/download/v0.3.0/ClaudePersonas-0.3.0.dmg) · [查看最新版本](https://github.com/macfika/claude-personas/releases/latest)
+
+1. 下载后双击 `ClaudePersonas-0.3.0.dmg`。
+2. 按窗口中的箭头，将左侧 **Claude Personas** 拖到右侧 **Applications（应用程序）**。
+3. 等待复制完成，从 Mac 的“应用程序”中打开 Claude Personas。
+4. 在 Finder 中推出 Claude Personas 安装磁盘。
+
+安装窗口附有五种语言的拖拽提示和 `Installation.html` 说明。不要直接从挂载的安装磁盘运行应用。DMG 用于图形安装，Release 中的 ZIP 继续供 Sparkle 和 Homebrew 使用。
+
+0.3.0 正式应用使用 Developer ID 签名并通过 Apple 公证，生产发布流程还会验证应用和 DMG 的公证票据及 Gatekeeper 结果。安装流程不会自动移除 quarantine，也不会修改系统安全策略。
+
+旧版 0.2.1 及更早的包使用 ad-hoc 签名、未公证。若打开旧版时被 Gatekeeper 阻止，先尝试打开，再进入“系统设置 → 隐私与安全性”，确认来源后选择“仍要打开”。Ed25519 更新签名与 Apple 签名、公证各有用途。
+
 ### Homebrew
 
 本仓库同时提供 tap，因此首次安装需要显式指定仓库地址：
@@ -26,13 +41,15 @@ brew update
 brew upgrade --cask macfika/claude-personas/claude-personas
 ```
 
-### 手动安装
+### 从 Homebrew 改为图形安装
 
-从 [Releases](https://github.com/macfika/claude-personas/releases/latest) 下载 `ClaudePersonas-<版本>.zip`，解压后把 `ClaudePersonas.app` 拖入 `/Applications` 或 `~/Applications`，然后打开。
+先退出 Claude Personas，再执行普通卸载：
 
-0.3.0 正式包使用 Developer ID 签名并通过 Apple 公证，生产发布流程还会验证 stapled 公证票据和 Gatekeeper 结果。安装流程不会自动移除 quarantine，也不会修改系统安全策略。
+```bash
+brew uninstall --cask macfika/claude-personas/claude-personas
+```
 
-旧版 0.2.1 及更早的包使用 ad-hoc 签名、未公证。若打开旧版时被 Gatekeeper 阻止，先尝试打开，再进入“系统设置 → 隐私与安全性”，确认来源后选择“仍要打开”。Ed25519 更新签名与 Apple 签名、公证各有用途。
+然后按上面的 DMG 步骤安装并从“应用程序”打开。普通卸载保留 `com.macfika.claude-personas` 的设置、配置列表和 Claude 账号数据；不要添加 `--zap`，也无需删除数据目录。新副本继续使用相同 bundle ID 和数据，更新改由 Sparkle 管理。若以前关闭了自动更新，可在设置中重新开启；登录时启动及系统权限可能需要重新启用或确认。
 
 ## 使用
 
@@ -82,7 +99,7 @@ cd claude-personas
 ./scripts/test.sh
 ```
 
-`./build.sh` 默认也只构建，输出 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.3.0.zip`。只有显式执行 `./build.sh --install` 才安装到 `~/Applications` 并启动。
+`./build.sh` 默认也只构建，输出 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.3.0.zip`。只有显式执行 `./build.sh --install` 才安装到 `~/Applications` 并启动。需要图形安装包时，继续运行 `./scripts/build-dmg.sh build/ClaudePersonas.app`，输出 `build/ClaudePersonas-0.3.0.dmg`。
 
 代码位于 [Sources/ClaudePersonas](Sources/ClaudePersonas)。可使用 Xcode 打开 `Package.swift` 编辑与调试；可分发的菜单栏应用请使用 `build.sh` 打包。贡献及发布流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
@@ -92,7 +109,7 @@ cd claude-personas
 
 | 安装来源 | 设置中入口 | 更新方式 |
 | --- | --- | --- |
-| 手动安装 Release ZIP | 自动更新开关、“检查更新…” | Sparkle 检查 appcast、验签、安装并重启 |
+| 手动安装 DMG（或 Release ZIP） | 自动更新开关、“检查更新…” | Sparkle 检查 appcast、验签、安装并重启 |
 | Homebrew 安装 | “使用 Homebrew 更新”，可复制命令 | `brew update && brew upgrade --cask macfika/claude-personas/claude-personas` |
 | Homebrew 收据损坏或缺失，但路径指向该副本 | 提示安装记录无法验证 | 保守禁用应用内更新，先检查/修复 brew 安装记录 |
 | 仓库 build 目录或 SwiftPM 调试运行 | 更新不可用 | 重新构建 |
@@ -103,7 +120,7 @@ cd claude-personas
 
 手动安装的自动检查默认启用，旧版明确关闭的偏好会迁移，可在设置中关闭。更新提示和安装由 Sparkle 管理；出错会在界面显示。更新重启会保留 Claude 配置窗口。`--check-update` 只读取最新发布信息，不下载或安装应用；`--update-now` 已禁用并返回非零退出码，请使用 GUI 或 brew。
 
-更新公钥位于 [Config/update-public-key.txt](Config/update-public-key.txt)。Sparkle appcast 使用原有项目 Ed25519 seed 签名，同时保留 `.zip.sig` 供 0.2.x 迁移；生成步骤使用相同公钥分别验证两种签名，不复用 MultiClaude 的信任根。发布依赖 `release` environment 的 `UPDATE_SIGNING_KEY`，并要求正式包先通过 Developer ID、公证票据和 Gatekeeper 检查。维护者可在本机完成签名公证，再将 ZIP 交给 CI 发布，无需导出证书；具体命令见 [贡献与发布指南](CONTRIBUTING.md)。私钥绝不能提交到仓库。
+更新公钥位于 [Config/update-public-key.txt](Config/update-public-key.txt)。Sparkle appcast 使用原有项目 Ed25519 seed 签名，同时保留 `.zip.sig` 供 0.2.x 迁移；生成步骤使用相同公钥分别验证两种签名，不复用 MultiClaude 的信任根。发布依赖 `release` environment 的 `UPDATE_SIGNING_KEY`，并要求正式包先通过 Developer ID、公证票据和 Gatekeeper 检查。维护者可在本机完成签名公证，再将 ZIP 和图形 DMG 交给 CI 发布，无需导出证书；具体命令见 [贡献与发布指南](CONTRIBUTING.md)。私钥绝不能提交到仓库。
 
 ## 许可与归属
 
