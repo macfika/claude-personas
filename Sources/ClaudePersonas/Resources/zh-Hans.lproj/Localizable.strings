@@ -18,7 +18,6 @@
 "Claude updated. Reopened %@." = "Claude 已更新。已重新打开 %@。";
 "Collapsed" = "已折叠";
 "Color" = "颜色";
-"Colored Menu Bar Icon" = "彩色菜单栏图标";
 "Copied MCP servers (%@) from %@ to %@." = "已复制 %@ 个 MCP 服务器，从 %@ 到 %@。";
 "Copy" = "复制";
 "Copy Claude Code Alias" = "复制 Claude Code 别名";
@@ -107,3 +106,11 @@
 "Yellow" = "黄色";
 "the account" = "该账号";
 "⌃⌥1 to 9" = "⌃⌥1 至 9";
+"Updates are managed by Homebrew." = "更新由 Homebrew 管理。";
+"Update with Homebrew" = "通过 Homebrew 更新…";
+"Run %@ in Terminal to update this installation." = "在终端中运行 %@ 来更新此安装。";
+"Copy Command" = "复制命令";
+"Automatic updates are unavailable in development builds." = "开发构建不支持自动更新。";
+"Unable to check for updates: %@" = "无法检查更新：%@";
+"Check for Updates…" = "检查更新…";
+"Updates are disabled because this Homebrew installation record could not be verified." = "无法验证此 Homebrew 安装记录，已禁用自动更新。";

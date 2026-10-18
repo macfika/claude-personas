@@ -10,7 +10,7 @@ import ServiceManagement
 import Carbon.HIToolbox
 import CryptoKit
 
-let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.2.1"
+let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.3.0"
 let websiteURL = URL(string: "https://github.com/macfika/claude-personas")!
 let supportURL = URL(string: "https://github.com/macfika/claude-personas/issues")!
 let claudeBundleID = "com.anthropic.claudefordesktop"
@@ -102,9 +102,23 @@ if args.count == 2, args[1] == "--selftest-update" {
     }
     exit(ok ? 0 : 1)
 }
-if args.count == 2, args[1] == "--check-update" || args[1] == "--update-now" {
-    // --check-update prints the latest release; --update-now also installs it over this app bundle.
-    let install = args[1] == "--update-now"
+if args.count == 2, args[1] == "--installation-channel" {
+    print(String(describing: InstallationChannel.detect()))
+    exit(0)
+}
+if args.count == 2, args[1] == "--selftest-installation" {
+    exit(InstallationChannelTests.run() ? 0 : 1)
+}
+if args.count == 2, args[1] == "--update-now" {
+    // No CLI bypass for Homebrew, or for Sparkle's installation safeguards.
+    let channel = InstallationChannel.detect()
+    print(channel.isHomebrew
+          ? "Managed by Homebrew. Run: brew update && brew upgrade --cask macfika/claude-personas/claude-personas"
+          : "Use Check for Updates… in Claude Personas. Updates are installed by Sparkle.")
+    exit(1)
+}
+if args.count == 2, args[1] == "--check-update" {
+    // Read-only release information. This command never downloads or installs executable code.
     let sem = DispatchSemaphore(value: 0)
     var code: Int32 = 0
     Task.detached {
@@ -112,9 +126,8 @@ if args.count == 2, args[1] == "--check-update" || args[1] == "--update-now" {
             guard let r = try await Updater.latest() else { print("no release found"); code = 1; sem.signal(); return }
             let newer = Updater.isNewer(r.version, than: Updater.currentVersion)
             print("installed \(Updater.currentVersion), latest \(r.version)\(newer ? ", update available" : ", up to date")")
-            if install && newer {
-                try await Updater.install(r, at: Bundle.main.bundleURL)
-                print("installed \(r.version) at \(Bundle.main.bundleURL.path)")
+            if InstallationChannel.detect().isHomebrew {
+                print("Managed by Homebrew. Run: brew update && brew upgrade --cask macfika/claude-personas/claude-personas")
             }
         } catch { print("failed: \(error)"); code = 1 }
         sem.signal()
@@ -374,9 +387,9 @@ if args.count == 3, args[1] == "--export-iconset" {
 if args.count > 1 {
     let usage = """
     Claude Personas \(appVersion)
-    Usage: ClaudePersonas [--list | --check-update | --update-now |
+    Usage: ClaudePersonas [--list | --installation-channel | --check-update |
       --selftest-update | --selftest-profiles | --selftest-signin |
-      --selftest-launchers | --selftest-version | --selftest-signature | --selftest-localization |
+      --selftest-launchers | --selftest-version | --selftest-signature | --selftest-localization | --selftest-installation |
       --sign-update FILE | --verify-update FILE SIGNATURE |
       --export-iconset DIRECTORY | --export-profile-icon FILE | --unregister-login]
     """

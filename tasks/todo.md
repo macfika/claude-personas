@@ -30,3 +30,21 @@ CI、Release、正式包本地化自测、Ed25519 验签、代码签名及 Homeb
 - [x] 发布修复版本并更新 Homebrew。
 
 0.2.1：中文和日语演示截图确认语言行图标、标题与相邻设置对齐，选择器右对齐且切换正常；本地及 CI 的 153 项自测通过，Release 成功。
+
+## 更新通道与菜单清理（0.3.0）
+
+- [x] 删除彩色菜单栏图标设置及相关行为。
+- [x] 使用安装收据/实际应用路径识别 Homebrew 安装，阻止其自更新并提供 brew 升级指引。
+- [x] 手动安装集成 Sparkle、检查更新入口和可见错误，移除旧自动替换机制。
+- [x] 实现 appcast 生成、旧签名兼容、Developer ID/公证构建和发布门禁。
+- [ ] 发布正式 0.3.0 与 appcast，再验证线上迁移和 Homebrew 管理。
+- [x] 构建、自测、界面检查并更新文档、Homebrew 管理策略。
+
+### 0.3.0 Review
+
+172 项自测、SwiftPM 编译、universal 主程序与 Sparkle framework、Developer ID/hardened runtime 签名验证通过。
+19 个临时安装来源案例通过，真实 /Applications 副本只读检测为 Homebrew。
+实际 Sparkle fixture 更新通过：旧 PID 83079/v1 退出，原安装路径替换并由新 PID 83159/v2 启动；更新后 codesign 校验通过。
+隔离演示 UI 已检查中文设置行对齐、彩色菜单栏设置移除；未操作真实 Claude 账号。
+发布流程已加入 tag/包版本匹配、对真实发布包自测及 Developer ID/stapler/Gatekeeper 门禁。
+Apple 公证 Accepted，已 staple，最终 ZIP 解压票据验证通过；发布、线上 appcast 与 Homebrew 管理验证进行中。详细证据见 docs/validation-0.3.0.md。

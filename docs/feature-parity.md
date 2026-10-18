@@ -2,6 +2,8 @@
 
 对照基线：[QuentinCar0n/multiclaude @ dfb986a16b02b07d0b45d07fbed89a18ab52e396](https://github.com/QuentinCar0n/multiclaude/tree/dfb986a16b02b07d0b45d07fbed89a18ab52e396)。Claude Personas 是此 Apache 2.0 项目的适配版本，SwiftUI 视图运行在 AppKit 菜单栏面板中。
 
+当前对照版本为 **0.3.0**，正式包使用 Developer ID 签名并通过 Apple 公证；旧版 0.2.1 仍为 ad-hoc 签名、未公证。
+
 “已保留”表示源码中存在实现；自测检查算法、文件操作或构造的测试数据，不代表已完成真实账号和系统交互验收。下列人工步骤在真实 Claude 与 macOS 上通过之前，应保持未勾选，并在发布记录中写明环境及结果。
 
 | 上游功能 | Claude Personas 实现 | 验证与边界 |
@@ -10,7 +12,7 @@
 | 点击启动、再次点击聚焦 | 已保留；按 PID 与目录匹配窗口 | 多窗口聚焦待验收 |
 | 单个退出、全部启动/退出 | 已保留；菜单栏悬停按钮及总开关 | 人工检查只关闭目标配置 |
 | 实时运行状态与数量 | 已保留；系统通知配合轮询 | 人工检查从 alias 启动的进程 |
-| 前台账号名称和颜色 | 已保留；监听前台进程变化 | 人工检查账号与颜色映射 |
+| 前台账号名称和颜色 | 保留前台账号名称；0.3.0 菜单栏统一单色 | 配置行、启动器和运行副本颜色保留 |
 | 新建、改名、顺序、颜色、Finder、shell alias | 已保留；配置右键菜单 | 名称及特殊字符处理需结合人工检查 |
 | 从默认账号、zsh alias 与 Claude-* 目录导入 | 已保留；排除 Claude-3p；定期发现目录 | alias 只支持识别器接受的语法，并非任意 shell 表达式 |
 | 移除配置而保留数据 | 已保留；记录排除路径以避免再次导入 | 人工确认目录仍在 |
@@ -27,17 +29,18 @@
 | 面板与前九配置快捷键 | 已保留；⌃⌥⌘M、⌃⌥1–9 | 默认关闭，需开启并检查系统冲突 |
 | 登录时启动、明暗模式、菜单栏设置 | 已保留；SMAppService 与原生外观 | 登录项目权限、系统主题需人工验证 |
 | 工具退出时一并退出配置 | 已保留；可选设置 | 人工验证开启/关闭两种行为 |
-| 自动更新工具，保留 Claude 窗口 | 已保留；独立仓库与 Ed25519 公钥 | 有本项目公钥时默认开启；签名校验与版本逻辑可自动验证，替换重启待端到端验证 |
-| Universal、Homebrew、GitHub Releases | 提供本项目脚本、Casks 与工作流 | macOS arm64 / x86_64；分发包使用 ad-hoc 签名，未公证 |
+| 自动更新工具，保留 Claude 窗口 | 手动安装改为 Sparkle 2.10.0；Homebrew 仅经 brew | 隔离 fixture 的真实替换重启已通过；正式包线上升级与窗口保留仍待验收 |
+| Universal、Homebrew、GitHub Releases | 提供本项目脚本、Casks 与工作流 | 0.3.0 使用 Developer ID 并已获 Apple 公证；生产工作流验证票据及 Gatekeeper |
 
 ## 与上游有意不同的部分
 
 - 产品名为 Claude Personas，主 bundle ID 为 `com.macfika.claude-personas`，专用 URL scheme 为 `claude-personas://`。不会导入上游自己的偏好设置，但能发现相同的 Claude 数据目录。
 - 拆分源文件到 `Sources/ClaudePersonas`；不保留上游“一份 Swift 文件”的组织方式。
-- 应用更新只使用 `macfika/claude-personas` 的发布渠道和独立公钥，有本项目公钥时默认开启后台更新，可在设置中关闭。
+- 手动安装通过 Sparkle appcast 更新，使用现有项目 Ed25519 seed 并保留旧版 `.zip.sig` 迁移。Homebrew 按当前副本路径和收据识别，仅提供 brew 更新；坏收据保守禁用自更新。开发目录不自更新。
 - Homebrew cask 与应用源码放在同一个仓库，tap 需要显式仓库 URL。
 - `./build.sh` 默认仅构建；`--install` 才执行本地安装和启动。
-- 没有承诺 App Store 分发、Apple 公证、中文界面或 Windows/Linux 支持。
+- 菜单栏移除彩色设置，配置与 launcher 颜色保留。已支持五种语言。
+- 新生产发布必须经过 Developer ID、公证票据和 Gatekeeper 检查；没有承诺 App Store 分发或 Windows/Linux 支持。
 
 ## 自动验证
 
@@ -49,6 +52,14 @@
 lipo -archs build/ClaudePersonas.app/Contents/MacOS/ClaudePersonas
 codesign --verify --deep --strict build/ClaudePersonas.app
 ```
+
+真实 Sparkle 隔离替换重启测试（需要交互式 macOS 登录会话）：
+
+```bash
+./scripts/test-sparkle-update.sh
+```
+
+该测试使用临时密钥、本地 feed 和 fixture app，已验证替换后版本与新进程，不涉及正式发布凭据或真实 Claude 数据。
 
 预期架构输出包含 `arm64` 和 `x86_64`。`codesign --verify` 成功仅代表包的代码签名完整，不代表 Apple 公证或 Developer ID 身份认证。
 
@@ -69,7 +80,7 @@ codesign --verify --deep --strict build/ClaudePersonas.app
 - [ ] 创建 `Personal`、`Work`，分别登录两个真实测试账号；独立重启后各自仍保持正确账号。
 - [ ] 分别测试 Google、SSO、电子邮件登录，确认回调进入发起登录的配置，其他配置不串号。
 - [ ] 主动取消登录与退出工具后，确认 claude:// 处理程序恢复；重启工具后可再次登录。
-- [ ] 点击运行中的配置只聚焦目标，前台名称/颜色、运行数量正确；退出一个配置不影响另一个。
+- [ ] 点击运行中的配置只聚焦目标，前台名称、单色菜单栏图标及运行数量正确；退出一个配置不影响另一个。
 - [ ] 全部开关与“Quit Profiles with Claude Personas”分别在开启和关闭状态符合设置。
 
 ### 配置、启动器及 CLI
@@ -86,8 +97,13 @@ codesign --verify --deep --strict build/ClaudePersonas.app
 
 - [ ] 保持多个配置运行，让官方 Claude 完成真实更新；确认没有串到默认账号，原配置恢复。
 - [ ] 主动退出的配置不会因恢复逻辑重新打开；正常使用默认账号的窗口不会被误关。
-- [ ] 使用两个可信的项目测试版本验证签名更新，确认替换、面板关闭后重启及 Claude 窗口保留。
+- [x] 在隔离 fixture 中完成真实 Sparkle 包替换及新进程重启验证。
+- [ ] 使用经过签名公证的正式版本验证线上 appcast 更新及 Claude 窗口保留。
+- [ ] 从 0.2.x 使用旧 `.zip.sig` 更新通道迁移到正式 0.3.0。
+- [ ] 手动安装显示自动更新与检查入口，Homebrew 只提供 brew 命令；缺失/损坏收据禁用自更新，开发目录不可更新。
+- [ ] `--check-update` 只读，`--update-now` 不安装且返回非零。
+- [ ] 检查 0.3.0 正式 ZIP 的 Developer ID 身份、stapled 公证票据和 Gatekeeper 结果。
 - [ ] 修改 ZIP、替换签名或使用错误公钥时拒绝安装，当前应用仍可启动。
 - [ ] 断网、下载失败、目标目录不可写时不会破坏现有应用。
 
-这些人工项是验收要求，并非本版本已经通过的测试结果。
+已勾选项仅表示所述范围的验证已完成；其他项仍是验收要求。历史 tap 安装结果不能证明 0.3.0 的线上升级或旧版迁移已经通过。

@@ -18,7 +18,6 @@
 "Claude updated. Reopened %@." = "Claude가 업데이트되어 %@을(를) 다시 열었습니다.";
 "Collapsed" = "접힘";
 "Color" = "색상";
-"Colored Menu Bar Icon" = "메뉴 막대 아이콘 색상 표시";
 "Copied MCP servers (%@) from %@ to %@." = "MCP 서버 %@개를 %@에서 %@에 복사했습니다.";
 "Copy" = "복사";
 "Copy Claude Code Alias" = "Claude Code 별칭 복사";
@@ -107,3 +106,11 @@
 "Yellow" = "노란색";
 "the account" = "해당 계정";
 "⌃⌥1 to 9" = "⌃⌥1~9";
+"Updates are managed by Homebrew." = "업데이트는 Homebrew에서 관리합니다.";
+"Update with Homebrew" = "Homebrew로 업데이트…";
+"Run %@ in Terminal to update this installation." = "이 설치를 업데이트하려면 터미널에서 %@을(를) 실행하세요.";
+"Copy Command" = "명령 복사";
+"Automatic updates are unavailable in development builds." = "개발 빌드에서는 자동 업데이트를 사용할 수 없습니다.";
+"Unable to check for updates: %@" = "업데이트를 확인할 수 없습니다: %@";
+"Check for Updates…" = "업데이트 확인…";
+"Updates are disabled because this Homebrew installation record could not be verified." = "이 Homebrew 설치 기록을 확인할 수 없어 자동 업데이트가 비활성화되었습니다.";

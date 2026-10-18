@@ -9,23 +9,21 @@ import Carbon.HIToolbox
 import CryptoKit
 
 enum Setting: String, CaseIterable, Identifiable {
-    case launchAtLogin, autoUpdate, routeSignIn, reopenAfterUpdate, shortcut, profileShortcuts, showActive, showCount, coloredIcon, dockApps, quitWithApp
+    case launchAtLogin, routeSignIn, reopenAfterUpdate, shortcut, profileShortcuts, showActive, showCount, dockApps, quitWithApp
 
-    static let onByDefault: Set<Setting> = [.autoUpdate, .routeSignIn, .reopenAfterUpdate, .showActive, .showCount]
+    static let onByDefault: Set<Setting> = [.routeSignIn, .reopenAfterUpdate, .showActive, .showCount]
 
     var id: String { rawValue }
 
     @MainActor var title: String {
         switch self {
         case .launchAtLogin: L("Launch at Login")
-        case .autoUpdate: L("Update Claude Personas Automatically")
         case .routeSignIn: L("Sign In in Each Account's Window")
         case .reopenAfterUpdate: L("Reopen After Claude Updates")
         case .shortcut: L("Keyboard Shortcut")
         case .profileShortcuts: L("Profile Shortcuts")
         case .showActive: L("Show Active Account in Menu Bar")
         case .showCount: L("Show Count in Menu Bar")
-        case .coloredIcon: L("Colored Menu Bar Icon")
         case .dockApps: L("App for Each Profile")
         case .quitWithApp: L("Quit Profiles with Claude Personas")
         }
@@ -34,14 +32,12 @@ enum Setting: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .launchAtLogin: "power"
-        case .autoUpdate: "arrow.down.circle"
         case .routeSignIn: "person.badge.key"
         case .reopenAfterUpdate: "arrow.clockwise"
         case .shortcut: "command"
         case .profileShortcuts: "keyboard"
         case .showActive: "menubar.rectangle"
         case .showCount: "number"
-        case .coloredIcon: "paintpalette"
         case .dockApps: "dock.rectangle"
         case .quitWithApp: "xmark.circle"
         }

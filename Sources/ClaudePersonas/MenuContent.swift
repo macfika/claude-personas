@@ -71,6 +71,7 @@ struct MenuContent: View {
             if settingsOpen {
                 VStack(spacing: 0) {
                     LanguagePickerRow()
+                    UpdateSettingsRow()
                     ForEach(Setting.allCases) { SettingRow(setting: $0) }
                 }
                 .padding(.horizontal, 6)

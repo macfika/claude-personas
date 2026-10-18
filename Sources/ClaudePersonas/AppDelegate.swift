@@ -78,18 +78,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let engine = Engine.shared
         let count = engine.runningCount
         let img = NSImage(systemSymbolName: "asterisk", accessibilityDescription: L("Claude Personas"))
-        // While a Claude window is in front, the menu bar names its account in the profile's color.
         let front = engine.isOn(.showActive) ? engine.profiles.first { $0.id == engine.frontID } : nil
-        if let front {
-            b.image = img?.withSymbolConfiguration(.init(paletteColors: [front.nsTint]))
-            b.image?.isTemplate = false
-        } else if count > 0 && engine.isOn(.coloredIcon) {
-            b.image = img?.withSymbolConfiguration(.init(paletteColors: [.claude]))
-            b.image?.isTemplate = false
-        } else {
-            b.image = img
-            b.image?.isTemplate = true
-        }
+        b.image = img
+        b.image?.isTemplate = true
         if let front {
             b.title = " " + front.name
         } else {

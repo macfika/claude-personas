@@ -18,7 +18,6 @@
 "Claude updated. Reopened %@." = "Claude 已更新。已重新開啟 %@。";
 "Collapsed" = "已收合";
 "Color" = "顏色";
-"Colored Menu Bar Icon" = "彩色選單列圖示";
 "Copied MCP servers (%@) from %@ to %@." = "已拷貝 %@ 個 MCP 伺服器，從 %@ 到 %@。";
 "Copy" = "拷貝";
 "Copy Claude Code Alias" = "拷貝 Claude Code 別名";
@@ -107,3 +106,11 @@
 "Yellow" = "黃色";
 "the account" = "該帳號";
 "⌃⌥1 to 9" = "⌃⌥1 至 9";
+"Updates are managed by Homebrew." = "更新由 Homebrew 管理。";
+"Update with Homebrew" = "透過 Homebrew 更新…";
+"Run %@ in Terminal to update this installation." = "在終端機中執行 %@ 來更新此安裝。";
+"Copy Command" = "複製指令";
+"Automatic updates are unavailable in development builds." = "開發版本不支援自動更新。";
+"Unable to check for updates: %@" = "無法檢查更新：%@";
+"Check for Updates…" = "檢查更新…";
+"Updates are disabled because this Homebrew installation record could not be verified." = "無法驗證此 Homebrew 安裝記錄，已停用自動更新。";

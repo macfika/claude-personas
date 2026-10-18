@@ -18,7 +18,6 @@
 "Claude updated. Reopened %@." = "Claude が更新されました。%@ を開き直しました。";
 "Collapsed" = "折りたたみ";
 "Color" = "カラー";
-"Colored Menu Bar Icon" = "メニューバーアイコンをカラーで表示";
 "Copied MCP servers (%@) from %@ to %@." = "MCP サーバー %@ 件を %@ から %@ にコピーしました。";
 "Copy" = "コピー";
 "Copy Claude Code Alias" = "Claude Code のエイリアスをコピー";
@@ -107,3 +106,11 @@
 "Yellow" = "イエロー";
 "the account" = "このアカウント";
 "⌃⌥1 to 9" = "⌃⌥1〜9";
+"Updates are managed by Homebrew." = "アップデートは Homebrew が管理しています。";
+"Update with Homebrew" = "Homebrew でアップデート…";
+"Run %@ in Terminal to update this installation." = "このインストールを更新するには、ターミナルで %@ を実行してください。";
+"Copy Command" = "コマンドをコピー";
+"Automatic updates are unavailable in development builds." = "開発ビルドでは自動アップデートを利用できません。";
+"Unable to check for updates: %@" = "アップデートを確認できません：%@";
+"Check for Updates…" = "アップデートを確認…";
+"Updates are disabled because this Homebrew installation record could not be verified." = "この Homebrew のインストール記録を検証できないため、自動アップデートは無効になっています。";

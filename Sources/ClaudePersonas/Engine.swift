@@ -104,7 +104,6 @@ final class Engine: ObservableObject {
 
     func isOn(_ s: Setting) -> Bool {
         if s == .launchAtLogin { return SMAppService.mainApp.status == .enabled }
-        if s == .autoUpdate && updatePublicKey.isEmpty { return false }
         if Setting.onByDefault.contains(s) && defaults.object(forKey: s.rawValue) == nil { return true }
         return defaults.bool(forKey: s.rawValue)
     }
@@ -284,6 +283,7 @@ final class Engine: ObservableObject {
         }
     }
     func show(notice text: String) { noticeProvider = { text } }
+    func show(localizedNotice: @escaping @MainActor () -> String) { noticeProvider = localizedNotice }
 
     private static func profileNames(_ profiles: [Profile]) -> String {
         let formatter = ListFormatter()

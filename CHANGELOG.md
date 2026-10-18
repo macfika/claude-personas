@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0
+
+- 菜单栏图标统一使用单色，移除彩色菜单栏设置；配置、启动器及运行副本的颜色保留。
+- 手动安装改用 Sparkle 2.10.0，提供自动更新开关、检查更新入口和可见错误提示；迁移旧版明确关闭的偏好。
+- 根据当前应用路径、Caskroom 和安装收据识别 Homebrew 管理的副本，仅提供 brew 命令；可疑或损坏收据保守禁用自更新，cask 移除 `auto_updates`。
+- `--check-update` 只读；禁用 `--update-now` 直接安装，更新统一经 GUI 或 brew。
+- appcast 和旧版 `.zip.sig` 使用相同 Ed25519 seed，为 0.2.x 提供迁移通道。
+- 构建支持 `CODESIGN_IDENTITY` 和 `NOTARY_PROFILE`；生产发布要求 Developer ID、stapled 公证及 Gatekeeper 验证通过。支持通过 `archive_release` 从同 tag 草稿导入本机签名公证 ZIP。
+- 正式包使用 Developer ID 签名，通过 Apple 公证；旧版 0.2.1 及更早的包仍为 ad-hoc 签名、未公证。
+- 发布由同 tag 草稿 ZIP 和必填 `archive_release` 的手动工作流完成；主线 CI 负责构建测试，推 tag 不触发发布。
+- 已在隔离 fixture 应用中完成真实 Sparkle 替换与重启；正式包线上升级、0.2.x 迁移、真实账号登录和 Claude 自身更新恢复仍待验收。
+
 ## 0.2.1
 
 - 修复语言设置行的对齐：图标、标题、间距和悬停背景与其他设置项一致，语言选择器靠右显示。

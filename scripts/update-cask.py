@@ -24,15 +24,13 @@ Path('Casks/claude-personas.rb').write_text(f'''cask "claude-personas" do
     strategy :github_latest
   end
 
-  auto_updates true
   depends_on macos: :sequoia
 
   app "ClaudePersonas.app"
 
   caveats <<~EOS
     Requires the official Claude Desktop app.
-    This app is ad-hoc signed and is not notarized by Apple.
-    If macOS blocks the first launch, allow it in System Settings > Privacy & Security.
+    Updates are managed by Homebrew. Run brew upgrade --cask macfika/claude-personas/claude-personas.
     Account data is preserved when this cask is uninstalled.
   EOS
 end

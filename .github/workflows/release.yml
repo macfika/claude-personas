@@ -1,40 +1,20 @@
 name: Release
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
+    inputs:
+      archive_release:
+        description: 'Publish a locally signed and notarized ZIP from this draft release tag (run on the same tag ref)'
+        required: true
+        default: ''
+        type: string
 permissions:
   contents: read
 concurrency:
   group: release
   cancel-in-progress: false
 jobs:
-  build:
-    runs-on: macos-15
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - name: Select Xcode 26
-        run: sudo xcode-select -s /Applications/Xcode_26.0.app
-      - name: Version
-        shell: bash
-        run: |
-          version=$(cat VERSION)
-          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
-            [[ "$GITHUB_REF_NAME" == "v$version" ]] || { echo 'Tag must match VERSION'; exit 1; }
-          fi
-          echo "VERSION=$version" >> "$GITHUB_ENV"
-          echo "BUILD=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
-      - name: Build and test
-        run: |
-          ./build.sh --no-install
-          ./scripts/test.sh
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: release-unsigned
-          path: build/ClaudePersonas-*.zip
   publish:
-    if: github.ref_type == 'tag'
-    needs: build
+    if: github.ref_type == 'tag' && inputs.archive_release == github.ref_name
     runs-on: macos-15
     environment: release
     permissions:
@@ -42,11 +22,34 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: main
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+          ref: ${{ github.sha }}
+      - name: Download notarized local archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCHIVE_TAG: ${{ inputs.archive_release }}
+        run: |
+          test "$ARCHIVE_TAG" = "$GITHUB_REF_NAME"
+          test "$(gh release view "$ARCHIVE_TAG" --json isDraft --jq .isDraft)" = true
+          mkdir -p build
+          gh release download "$ARCHIVE_TAG" --pattern "ClaudePersonas-${ARCHIVE_TAG#v}.zip" --dir build
+      - name: Verify production signing and notarization
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          test "$(cat VERSION)" = "$version"
+          ditto -x -k "build/ClaudePersonas-$version.zip" build/distribution-check
+          app=build/distribution-check/ClaudePersonas.app
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist")" = com.macfika.claude-personas
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")" = "$version"
+          PERSONAS_TEST_APP="$PWD/$app" ./scripts/test.sh
+          codesign --verify --deep --strict "$app"
+          codesign --display --verbose=2 "$app" 2>&1 | grep -q '^Authority=Developer ID Application:'
+          xcrun stapler validate "$app"
+          spctl --assess --type execute --verbose "$app"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          name: release-unsigned
-          path: build
+          ref: main
+          path: tap
       - name: Sign, publish, and pin cask
         shell: bash
         env:
@@ -61,6 +64,14 @@ jobs:
           bin=build/unpacked/ClaudePersonas.app/Contents/MacOS/ClaudePersonas
           "$bin" --sign-update "$archive" > "$archive.sig"
           "$bin" --verify-update "$archive" "$archive.sig"
+          # Existing v0.2.x releases do not contain an appcast yet.
+          gh api repos/macfika/claude-personas/releases/latest > build/previous-release.json
+          if python3 -c 'import json; import sys; sys.exit(not any(a["name"] == "appcast.xml" for a in json.load(open("build/previous-release.json"))["assets"]))'; then
+            previous_tag=$(python3 -c 'import json; print(json.load(open("build/previous-release.json"))["tag_name"])')
+            gh release download "$previous_tag" --pattern appcast.xml --dir build/previous
+            mv build/previous/appcast.xml build/previous-appcast.xml
+          fi
+          python3 scripts/generate-appcast.py "$archive"
           shasum -a 256 "$archive" > build/sha256.txt
           awk -v v="$version" '/^## / { on = ($2 == v); next } on { print }' CHANGELOG.md > build/notes.md
           cat >> build/notes.md <<'NOTES'
@@ -70,10 +81,13 @@ jobs:
           brew tap macfika/claude-personas https://github.com/macfika/claude-personas
           brew install --cask macfika/claude-personas/claude-personas
           ```
-          This release is ad-hoc signed, not notarized by Apple. Account data is preserved on uninstall.
+          Developer ID signed and notarized by Apple. Manual installations use Sparkle; Homebrew installations update through brew. Account data is preserved on uninstall.
           NOTES
-          gh release create "$GITHUB_REF_NAME" "$archive" "$archive.sig" build/sha256.txt --title "Claude Personas $version" --notes-file build/notes.md --verify-tag
+          gh release upload "$GITHUB_REF_NAME" "$archive.sig" build/sha256.txt build/appcast.xml --clobber
+          gh release edit "$GITHUB_REF_NAME" --draft=false --latest --title "Claude Personas $version" --notes-file build/notes.md
           python3 scripts/update-cask.py "$version" "$archive"
+          cp Casks/claude-personas.rb tap/Casks/claude-personas.rb
+          cd tap
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add Casks/claude-personas.rb

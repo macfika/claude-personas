@@ -17,9 +17,9 @@ cd claude-personas
 ./scripts/test.sh
 ```
 
-默认 `./build.sh` 只构建。使用 `./build.sh --install` 才会安装到 `~/Applications` 并启动。主要产物为 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.2.1.zip`；应用可执行文件为 `Contents/MacOS/ClaudePersonas`。
+默认 `./build.sh` 只构建。使用 `./build.sh --install` 才会安装到 `~/Applications` 并启动。主要产物为 `build/ClaudePersonas.app` 和 `build/ClaudePersonas-0.3.0.zip`；应用可执行文件为 `Contents/MacOS/ClaudePersonas`。
 
-SwiftUI 视图和 AppKit 集成位于 `Sources/ClaudePersonas`，没有第三方 Swift 依赖。修改优先保持简单，避免触碰官方 Claude.app 的签名内容；不要在安装或更新脚本中自动移除 quarantine。
+SwiftUI 视图和 AppKit 集成位于 `Sources/ClaudePersonas`，依赖固定版本 Sparkle 2.10.0。`scripts/fetch-sparkle.sh` 下载官方框架并校验固定 SHA-256；SwiftPM 也固定同版本。框架主许可为 MIT，附带 BSD 等第三方组件许可；构建会将完整原始 LICENSE 保存为应用资源 `Sparkle-LICENSE`，请勿遗漏。修改优先保持简单，避免触碰官方 Claude.app 的签名内容；不要在安装或更新脚本中自动移除 quarantine。
 
 ## 验证要求
 
@@ -39,19 +39,84 @@ CLAUDE_PERSONAS_DEMO=1 CLAUDE_PERSONAS_PREVIEW=panel \
 
 演示模式的画面和运行标记是样例，不代表真实账号已登录。
 
-## 发布
+## 更新通道与验证
 
-1. 更新版本配置与 CHANGELOG，确保 tag、应用版本、ZIP 名称及 Homebrew cask 版本一致。
-2. 在 macOS 上运行构建与测试，检查通用二进制、bundle ID `com.macfika.claude-personas` 和签名完整性，并记录人工验收情况。
-3. 配置匹配 `Config/update-public-key.txt` 公钥的 GitHub Actions `release` environment secret **UPDATE_SIGNING_KEY**。它应包含 Ed25519 原始 32 字节私钥的 Base64 字符串，不能使用上游 MultiClaude 的私钥或公钥。
-4. 推送版本 tag（首版为 `v0.1.0`），检查 `.github/workflows/release.yml` 的结果与 Release 附件，确认 ZIP 和对应 `.zip.sig` 都存在。
-5. 发布工作流会将同仓库 `Casks/claude-personas.rb` 的版本、下载地址与 SHA-256 更新并提交到 `main`。检查其对应实际 ZIP，并完成一次从 tap 安装的验证。
+手动安装副本由 `UpdateController` 启动 Sparkle；Homebrew 和安装记录可疑的副本不启动 Sparkle。识别依据包含 Caskroom artifact、解析后的路径、appdir 和安装收据，不能仅因为机器装了 cask 就关闭其他手动副本的更新。坏收据与丢失收据在明确指向当前副本时保守禁用，开发目录也不自更新。检查与安装边界都会重新验证来源。
 
-Ed25519 签名验证的是发布包与项目更新密钥的关系，不能代替 Apple Developer ID 签名或公证。发布说明必须准确说明当前为 ad-hoc 签名、未公证。
+`--installation-channel` 可检查当前副本归属。`--check-update` 只读，不下载应用；`--update-now` 已禁用并退出 1。Homebrew 使用 `brew update && brew upgrade --cask macfika/claude-personas/claude-personas`，cask 不应添加 `auto_updates`。
 
-签名工具通过 `CLAUDE_PERSONAS_SIGNING_KEY` 环境变量读取私钥，`--sign-update <zip>` 输出 Base64 签名；`--verify-update <zip> <signature-file>` 使用 app 内置公钥验签。CI 将 secret 传给签名步骤。不要把私钥写进源码、日志、提交或 Release 附件，也不要在 PR 中设置它。
+自测之外，可在有图形登录会话的 macOS 上运行：
 
-公钥会进入构建后的应用。如果更换公钥，已安装应用不能直接信任新密钥签名的更新；需要单独设计迁移路径，不能只替换公钥文件就宣称兼容。
+```bash
+./scripts/test-sparkle-update.sh
+```
+
+它创建临时密钥、本地 HTTP appcast 和独立 fixture bundle，真实执行 Sparkle 替换及重启并检查新版本和进程。该测试已通过，但不验证生产 Developer ID、公证、正式 appcast 或真实 Claude 账号窗口。
+
+## 发布流程（以 0.3.0 为例）
+
+0.3.0 使用 Developer ID 签名，并已取得 Apple 公证 Accepted 结果。旧版 0.2.1 仍是 ad-hoc 签名、未公证。线上升级和 0.2.x 迁移需要单独验收；签名公证通过不能代替这两项验证。
+
+生产工作流会依次检查完整代码签名、`Developer ID Application` 身份、stapled 公证票据和 Gatekeeper；ad-hoc 构建不能通过发布校验。推 tag 本身不会触发发布，也不会把本地证书带入 CI。当前推荐在有证书的本机完成签名公证，再使用同 tag 草稿传递 ZIP，不需要导出证书给 GitHub。
+
+### 1. 准备本机身份与版本
+
+需要已安装且可用于签名的 Developer ID Application 证书、可用的 Apple 公证凭据和已保存的 notarytool Keychain profile。可先列出本机代码签名身份：
+
+```bash
+security find-identity -v -p codesigning
+xcrun notarytool store-credentials "claude-personas-notary"
+```
+
+第二条按交互提示保存你自己的凭据；不要将密码、证书私钥或 Keychain 内容放入仓库。已有 profile 可直接使用。确认 VERSION 为 `0.3.0`，CHANGELOG 的 `## 0.3.0` 节记录最终行为，发布工作流和生成 appcast 脚本已经包含在准备发布的提交中。
+
+### 2. 构建、签名、公证和验证
+
+把下方示例身份替换为 `security find-identity` 输出中的真实 Developer ID：
+
+```bash
+CODESIGN_IDENTITY='Developer ID Application: Your Name (TEAMID)' \
+NOTARY_PROFILE='claude-personas-notary' ./build.sh --no-install
+./scripts/test.sh
+codesign --verify --deep --strict build/ClaudePersonas.app
+codesign --display --verbose=2 build/ClaudePersonas.app
+xcrun stapler validate build/ClaudePersonas.app
+spctl --assess --type execute --verbose build/ClaudePersonas.app
+```
+
+脚本按由内到外的顺序签名 Sparkle helper、框架和主应用；使用 Developer ID 时启用 hardened runtime 与时间戳。设置 `NOTARY_PROFILE` 后提交公证、等待结果、staple，再生成 `build/ClaudePersonas-0.3.0.zip`。没有设置身份时只是本地 ad-hoc 构建，不具备生产发布资格。不要在此后修改 ZIP 或应用内容。
+
+### 3. 上传同 tag 的草稿并交给 CI
+
+确保准备发布的提交已推送到 `main`。以下命令适用于首次创建该 tag 和草稿；已有同名 tag 或草稿时先确认其提交及附件，勿覆盖错误版本。
+
+```bash
+git tag v0.3.0
+git push origin v0.3.0
+gh release create v0.3.0 build/ClaudePersonas-0.3.0.zip \
+  --repo macfika/claude-personas --draft --verify-tag \
+  --title 'Claude Personas 0.3.0' --notes 'Pending production verification.'
+gh workflow run release.yml --repo macfika/claude-personas \
+  --ref v0.3.0 -f archive_release=v0.3.0
+```
+
+主线 CI 负责构建和自测；推 tag 仅建立版本引用。上述显式 dispatch 使用 `archive_release`，从同 tag 的草稿下载已经签名公证的 ZIP。输入必须等于运行 ref `v0.3.0`，且对应 Release 必须仍为草稿；不要提前手动发布。
+
+CI 需要 `release` environment secret **UPDATE_SIGNING_KEY**，内容为与 `Config/update-public-key.txt` 匹配的 Base64 编码 32 字节 Ed25519 seed。此密钥与本机 Apple 签名证书各有用途。流程验证 ZIP 后，使用 seed 生成旧版 `.zip.sig` 和 Sparkle `appcast.xml`，核对两者签名完全一致，再生成 `sha256.txt`，将草稿发布为 latest，并提交同仓库 `Casks/claude-personas.rb` 的版本与 SHA-256 更新到 `main`。
+
+```bash
+gh run list --repo macfika/claude-personas --workflow release.yml --limit 5
+gh run watch RUN_ID --repo macfika/claude-personas --exit-status
+gh release view v0.3.0 --repo macfika/claude-personas
+```
+
+将 `RUN_ID` 替换为对应 dispatch 运行编号。发布后检查 ZIP、`.zip.sig`、`sha256.txt`、`appcast.xml` 四项附件，完成正式包首次安装、从 0.2.x 迁移、Sparkle 更新和 Homebrew upgrade 验收，记录未完成项。
+
+### 密钥和 appcast 兼容性
+
+Sparkle feed 地址为 `https://github.com/macfika/claude-personas/releases/latest/download/appcast.xml`。`scripts/generate-appcast.py` 使用现有项目 seed，保留之前 appcast 条目并要求新 CFBundleVersion 递增；默认 build 编号由语义版本计算。旧 0.2.x 仍读取 GitHub API 和 `.zip.sig` 以迁移到新版本。
+
+`--sign-update <zip>` 从 `CLAUDE_PERSONAS_SIGNING_KEY` 环境变量读取 seed，`--verify-update <zip> <signature-file>` 使用内置公钥验签；CI 负责传递 secret。不要将私钥写入源码、日志、PR 或 Release。更换公钥需要专门的客户端迁移策略，不能只替换文件。Ed25519 更新签名不能代替 Apple 签名、公证或 Gatekeeper 检查。
 
 ## 界面翻译
 

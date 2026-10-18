@@ -15,17 +15,7 @@ struct SettingRow: View {
     var body: some View {
         let on = engine.isOn(setting)
         Button { engine.toggle(setting) } label: {
-        HStack(spacing: 9) {
-            Badge(on: on) { Image(systemName: setting.symbol).font(.system(size: 12, weight: .medium)) }
-            Text(setting.title).font(.system(size: 13)).foregroundStyle(.primary.opacity(on ? 1 : 0.75))
-            Spacer(minLength: 4)
-            if let hint = setting.hint {
-                Text(hint).font(.system(size: 10)).foregroundStyle(.tertiary)
-            }
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 5)
-        .modifier(HoverBackground(radius: 8))
+            SettingsRowLabel(title: setting.title, symbol: setting.symbol, on: on, hint: setting.hint)
         }
         .buttonStyle(.plain)
         .accessibilityValue(on ? L("On") : L("Off"))
