@@ -1,6 +1,6 @@
 cask "claude-personas" do
-  version "0.2.1"
-  sha256 "61cdfb3ecfd5a9a7a9ed2295e43ff539c72d635018cc8adbb2f39a6bff64bf17"
+  version "0.3.0"
+  sha256 "449febd5f6c7b705cb1bee71adf25cdae80e9aa300057960f71418ed69f41d5f"
 
   url "https://github.com/macfika/claude-personas/releases/download/v#{version}/ClaudePersonas-#{version}.zip"
   name "Claude Personas"
@@ -18,8 +18,7 @@ cask "claude-personas" do
 
   caveats <<~EOS
     Requires the official Claude Desktop app.
-    This app is ad-hoc signed and is not notarized by Apple.
-    If macOS blocks the first launch, allow it in System Settings > Privacy & Security.
+    Updates are managed by Homebrew. Run brew upgrade --cask macfika/claude-personas/claude-personas.
     Account data is preserved when this cask is uninstalled.
   EOS
 end
