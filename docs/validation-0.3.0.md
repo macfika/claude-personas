@@ -15,8 +15,18 @@
 
 ## 验证边界
 
-Apple 公证已 Accepted（提交 ID `96ea9d65-5088-419b-a4a7-a48ec23f75c9`），原应用及最终 ZIP 解压副本的 stapler validate 通过。spctl 显示 Notarized Developer ID；本机全局 Gatekeeper 策略另有 security disabled override，因此还需在独立 CI runner 对正式包再次检查。最终 ZIP SHA-256：`449febd5f6c7b705cb1bee71adf25cdae80e9aa300057960f71418ed69f41d5f`。没有更改系统安全设置。
+Apple 公证已 Accepted（提交 ID `96ea9d65-5088-419b-a4a7-a48ec23f75c9`），原应用及最终 ZIP 解压副本的 stapler validate 通过。spctl 显示 Notarized Developer ID；本机全局 Gatekeeper 策略另有 security disabled override，独立 GitHub runner 已再次检查正式 ZIP，完整签名、票据和 Gatekeeper 都通过。最终 ZIP SHA-256：`449febd5f6c7b705cb1bee71adf25cdae80e9aa300057960f71418ed69f41d5f`。没有更改系统安全设置。
 
-尚未执行生产 appcast 下载升级、旧版真实迁移或 Homebrew upgrade。隔离 fixture 不证明真实 Claude 窗口保留。
+发布后下载的 ZIP 与 SHA-256、旧 `.zip.sig`、最新 appcast 的版本/长度/下载地址及 Sparkle enclosure 签名全部通过验证。
 
-按 CONTRIBUTING.md 通过草稿 ZIP 和同 tag 的 `archive_release` 工作流发布，再补充正式发行和升级验证。真实多账号登录、SSO 与 Claude 自身更新恢复也仍需测试账号验收。
+将真实 0.2.1 Release 解压到临时目录，通过其原有只更新当前副本的 CLI 成功迁移到线上 0.3.0，并验证磁盘版本与完整代码签名；没有启动生产 GUI、替换 /Applications 副本或接触真实账号。
+
+`brew fetch --cask` 通过 0.3.0 下载校验，默认 `brew outdated --cask --verbose` 明确输出 `claude-personas (0.2.1) != 0.3.0`，证明移除 auto_updates 后 Homebrew 能管理升级。没有执行真实安装的 brew upgrade，以保留用户正在运行的应用。隔离 fixture 不证明真实 Claude 窗口保留。
+
+0.3.0 已通过同 tag 的 `archive_release` 工作流正式发布，appcast 和 cask 均已上线。
+
+- Release：https://github.com/macfika/claude-personas/releases/tag/v0.3.0
+- 成功发布与独立生产包验证：https://github.com/macfika/claude-personas/actions/runs/39129187650
+- 最终主线构建及 172 项自测：https://github.com/macfika/claude-personas/actions/runs/39129184397
+
+首次发布尝试在签名兼容性门禁被阻止：CryptoKit 会生成带随机性的有效 Ed25519 签名，不能与 Sparkle 的签名字节比较相等。改为同公钥分别验证旧签名与新签名后发布成功；临时随机 seed 回归覆盖两个不同但有效的 CryptoKit 签名，ZIP SHA-256 保持不变，无需更换密钥或重新公证。真实多账号登录、SSO 与 Claude 自身更新恢复也仍需测试账号验收。

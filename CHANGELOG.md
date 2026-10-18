@@ -10,7 +10,7 @@
 - 构建支持 `CODESIGN_IDENTITY` 和 `NOTARY_PROFILE`；生产发布要求 Developer ID、stapled 公证及 Gatekeeper 验证通过。支持通过 `archive_release` 从同 tag 草稿导入本机签名公证 ZIP。
 - 正式包使用 Developer ID 签名，通过 Apple 公证；旧版 0.2.1 及更早的包仍为 ad-hoc 签名、未公证。
 - 发布由同 tag 草稿 ZIP 和必填 `archive_release` 的手动工作流完成；主线 CI 负责构建测试，推 tag 不触发发布。
-- 已在隔离 fixture 应用中完成真实 Sparkle 替换与重启；正式包线上升级、0.2.x 迁移、真实账号登录和 Claude 自身更新恢复仍待验收。
+- 已完成隔离 Sparkle 替换重启、真实 0.2.1 临时 CLI 副本线上迁移、发布包双签名及 Homebrew 下载/版本发现验证；生产 GUI 升级后的真实窗口保留、账号登录和 Claude 自身更新恢复仍待验收。
 
 ## 0.2.1
 

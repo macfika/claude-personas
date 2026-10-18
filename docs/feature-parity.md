@@ -99,9 +99,9 @@ codesign --verify --deep --strict build/ClaudePersonas.app
 - [ ] 主动退出的配置不会因恢复逻辑重新打开；正常使用默认账号的窗口不会被误关。
 - [x] 在隔离 fixture 中完成真实 Sparkle 包替换及新进程重启验证。
 - [ ] 使用经过签名公证的正式版本验证线上 appcast 更新及 Claude 窗口保留。
-- [ ] 从 0.2.x 使用旧 `.zip.sig` 更新通道迁移到正式 0.3.0。
+- [x] 真实 0.2.1 Release 临时副本通过旧 `.zip.sig` CLI 更新通道迁移到正式 0.3.0；未启动生产 GUI。
 - [ ] 手动安装显示自动更新与检查入口，Homebrew 只提供 brew 命令；缺失/损坏收据禁用自更新，开发目录不可更新。
-- [ ] `--check-update` 只读，`--update-now` 不安装且返回非零。
+- [x] 检查实现中 `--check-update` 只读；0.3.0 实测 `--update-now` 不安装且返回 1。
 - [x] 检查 0.3.0 正式 ZIP 的 Developer ID 身份、stapled 公证票据和 Gatekeeper 结果（GitHub runner 独立通过）。
 - [ ] 修改 ZIP、替换签名或使用错误公钥时拒绝安装，当前应用仍可启动。
 - [ ] 断网、下载失败、目标目录不可写时不会破坏现有应用。

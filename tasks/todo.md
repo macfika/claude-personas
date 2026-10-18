@@ -37,7 +37,7 @@ CI、Release、正式包本地化自测、Ed25519 验签、代码签名及 Homeb
 - [x] 使用安装收据/实际应用路径识别 Homebrew 安装，阻止其自更新并提供 brew 升级指引。
 - [x] 手动安装集成 Sparkle、检查更新入口和可见错误，移除旧自动替换机制。
 - [x] 实现 appcast 生成、旧签名兼容、Developer ID/公证构建和发布门禁。
-- [ ] 发布正式 0.3.0 与 appcast，再验证线上迁移和 Homebrew 管理。
+- [x] 发布正式 0.3.0 与 appcast，验证临时旧版线上迁移和 Homebrew 下载/版本发现。
 - [x] 构建、自测、界面检查并更新文档、Homebrew 管理策略。
 
 ### 0.3.0 Review
@@ -47,4 +47,4 @@ CI、Release、正式包本地化自测、Ed25519 验签、代码签名及 Homeb
 实际 Sparkle fixture 更新通过：旧 PID 83079/v1 退出，原安装路径替换并由新 PID 83159/v2 启动；更新后 codesign 校验通过。
 隔离演示 UI 已检查中文设置行对齐、彩色菜单栏设置移除；未操作真实 Claude 账号。
 发布流程已加入 tag/包版本匹配、对真实发布包自测及 Developer ID/stapler/Gatekeeper 门禁。
-Apple 公证 Accepted，已 staple，最终 ZIP 解压票据验证通过；发布、线上 appcast 与 Homebrew 管理验证进行中。详细证据见 docs/validation-0.3.0.md。
+Apple 公证 Accepted，已 staple，最终 ZIP 解压票据验证通过；Release 39129187650 成功，线上两种签名/appcast/校验和通过；真实 0.2.1 临时 CLI 副本迁移成功，brew fetch 和默认 outdated 发现 0.3.0 均通过，保留真实运行应用。详细证据见 docs/validation-0.3.0.md。

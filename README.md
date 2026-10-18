@@ -61,7 +61,7 @@ brew upgrade --cask macfika/claude-personas/claude-personas
 
 完整对照、边界和人工验收步骤见 [功能对照表](docs/feature-parity.md)。真实双账号登录、Google/SSO 回调、Claude 实际更新后的恢复仍需端到端验证。已在临时目录、临时密钥和独立 fixture 应用上完成真实 Sparkle 替换与重启验证；正式包的线上 appcast 升级、旧版迁移和升级后 Claude 窗口保留仍待验收。
 
-已完成的构建、153 项自测、演示语言切换、正式包资源与签名检查，见 [0.2.0 验证记录](docs/validation-0.2.0.md)。
+0.3.0 的 172 项自测、Sparkle 实际替换重启、Developer ID/公证、线上签名及 Homebrew 校验，见 [0.3.0 验证记录](docs/validation-0.3.0.md)。历史多语言验证见 [0.2.0 验证记录](docs/validation-0.2.0.md)。
 
 ## 数据与隐私
 
