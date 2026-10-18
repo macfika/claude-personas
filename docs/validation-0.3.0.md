@@ -38,3 +38,7 @@ Apple 公证已 Accepted（提交 ID `96ea9d65-5088-419b-a4a7-a48ec23f75c9`）�
 - 只读挂载后逐项比较包内 app 与原 app 的文件哈希、权限和符号链接，内容完全一致。验证工具避开会修改 app FinderInfo 的扩展名隐藏设置。
 - 仅向现有 0.3.0 Release 增加 DMG，并更新 sha256.txt；ZIP、其签名、appcast 与 Homebrew 包保持原样。
 - Homebrew 普通卸载只删除 app artifact；相同 bundle ID 的 UserDefaults 设置、配置列表及账户数据保留。登录项使用 SMAppService，系统权限由 macOS 管理，不能承诺卸载重装后自动保留。未卸载用户实际应用。
+
+DMG 已公开下载并与本地已公证文件 SHA-256 一致：`cfd488e649ac7a4a7a1503ad770ffd1fe14f9e98b5cc0cbb986a552859190551`。正常 brew 删除应用及其安装记录后，在相同路径重新创建手动副本的临时目录迁移检测通过（homebrew → manual）；未操作真实卸载。
+
+新增 DMG 流程的独立 CI 构建、172 项自测、磁盘镜像生成与挂载/内容验证全部通过：https://github.com/macfika/claude-personas/actions/runs/39130305280 。

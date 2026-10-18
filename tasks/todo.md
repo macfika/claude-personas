@@ -54,4 +54,9 @@ Apple 公证 Accepted，已 staple，最终 ZIP 解压票据验证通过；Relea
 - [x] 提供签名公证的图形化 DMG，明确显示拖入 Applications 的安装步骤。
 - [x] 将 DMG 纳入后续构建/CI/发布校验，保留 ZIP 供 Sparkle 和 Homebrew。
 - [x] 核实卸载 brew 后设置保留和手动更新通道，更新迁移说明。
-- [ ] 发布当前版本 DMG 并验证下载、签名、公证与内容。
+- [x] 发布当前版本 DMG 并验证下载、签名、公证与内容。
+
+### 图形安装 Review
+
+0.3.0 的 DMG 已签名、公证、staple，并补充到现有正式 Release；公开下载 SHA-256 校验通过。Finder 图标位置和五语背景已检查，包内 app 的文件、权限和链接与已发布原 app 完全一致。原 ZIP / appcast / Homebrew 更新包未替换。
+CI 39130305280 包含 universal 构建、172 项自测及 DMG 生成/挂载验证，全部通过。正常 brew 卸载→同路径手动安装的临时来源检测通过。用户设置/账号保留已核对实现和 cask 卸载规则，登录项与系统权限例外已写明。
