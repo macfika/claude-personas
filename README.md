@@ -1,82 +1,84 @@
 # Claude Personas
 
-在 Mac 菜单栏中管理多个 Claude Desktop 账号，在工作、个人和其他配置之间切换。
+**English** | [简体中文](README.zh-CN.md)
 
-需要 **macOS 15 或更新版本**，并已安装官方 [Claude Desktop](https://claude.ai/download)。支持 Apple silicon 和 Intel Mac。
+Manage multiple Claude Desktop accounts from your Mac menu bar and switch between work, personal, and other profiles.
 
-## 安装（推荐 DMG）
+Requires **macOS 15 or later** and the official [Claude Desktop](https://claude.ai/download) app. Supports Apple silicon and Intel Macs.
 
-[**下载 Claude Personas DMG**](https://github.com/macfika/claude-personas/releases/download/v0.3.0/ClaudePersonas-0.3.0.dmg) · [查看最新版本](https://github.com/macfika/claude-personas/releases/latest)
+## Install (DMG recommended)
 
-1. 下载后双击 DMG。
-2. 按窗口中的箭头，将 **Claude Personas** 拖到右侧 **Applications（应用程序）**。
-3. 等待复制完成，从“应用程序”打开 Claude Personas，然后推出安装磁盘。
+[**Download Claude Personas DMG**](https://github.com/macfika/claude-personas/releases/download/v0.3.0/ClaudePersonas-0.3.0.dmg) · [View the latest release](https://github.com/macfika/claude-personas/releases/latest)
 
-推荐使用 DMG 安装，之后应用会自动检查更新，也可以在设置中选择“检查更新…”。无需每次重新下载安装包。请从“应用程序”打开应用，不要直接在安装磁盘中运行。
+1. Download and double-click the DMG.
+2. Follow the arrow and drag **Claude Personas** into the **Applications** folder on the right.
+3. Wait for copying to finish, open Claude Personas from Applications, then eject the installation disk.
 
-## 开始使用
+DMG installation is recommended. The app checks for updates automatically, and you can also choose **Check for Updates…** in Settings. You do not need to download a new installer for every update. Open the app from Applications rather than running it directly from the installation disk.
 
-1. 点击菜单栏中的星号图标，默认配置使用已有的 Claude 账号。
-2. 选择“新建配置”，输入如 `Work` 的名称，然后登录另一个账号。
-3. 点击配置打开或切换到对应窗口；顶部开关可以全部打开或退出。
-4. 右键配置可以改名、排序、设置颜色、打开数据目录或从列表移除。
+## Get started
 
-新建配置需要单独登录。“复制为新配置”会复制原配置的登录状态、聊天数据和设置，副本最初仍属于同一账号。
+1. Click the asterisk icon in the menu bar. The default profile uses your existing Claude account.
+2. Choose **New Profile**, enter a name such as `Work`, then sign in to another account.
+3. Click a profile to open or focus its window. The switch at the top opens or quits all profiles.
+4. Right-click a profile to rename it, change its order or color, open its data folder, or remove it from the list.
 
-## 主要功能
+New profiles require a separate sign-in. **Duplicate as New Profile…** copies the original profile's sign-in state, chat data, and settings, so the copy initially belongs to the same account.
 
-- 多个 Claude 账号使用各自的数据目录，同时运行并显示状态。
-- 为配置设置名称、颜色和启动偏好，创建独立的 Dock 与应用程序启动器。
-- 支持复制配置、复制 MCP 服务器设置，以及为 Claude Code 使用独立配置。
-- 可开启菜单栏快捷键、配置快捷键和登录时启动。
-- 支持简体中文、繁体中文、日语、韩语和英语，默认跟随系统语言；在“设置 → 语言”中切换。
+## Features
 
-Claude Code 功能需要另行安装并登录 `claude` 命令行工具。
+- Run multiple Claude accounts at the same time, each with its own data folder and status indicator.
+- Customize profile names, colors, and startup preferences, and create separate Dock and app launchers.
+- Duplicate profiles, copy MCP server settings, and use separate configurations for Claude Code.
+- Enable menu bar shortcuts, profile shortcuts, and launch at login.
+- Use Simplified Chinese, Traditional Chinese, Japanese, Korean, or English. The app follows your system language by default; change it in **Settings → Language**.
 
-## 更新
+Claude Code features require the `claude` command-line tool to be installed and signed in separately.
 
-**DMG 安装：** 默认自动检查更新，按应用中的提示完成更新。可在设置中关闭自动检查，或随时选择“检查更新…”。如果以前关闭过自动检查，重新安装后仍会保留该选择。
+## Updates
 
-**Homebrew 安装：** 在应用中选择“使用 Homebrew 更新”，或在终端运行：
+**DMG installations:** Automatic update checks are enabled by default. Follow the prompts in the app to update. You can turn off automatic checks in Settings or choose **Check for Updates…** at any time. If you previously disabled automatic checks, reinstalling preserves that choice.
+
+**Homebrew installations:** Choose **Update with Homebrew…** in the app, or run:
 
 ```bash
 brew update
 brew upgrade --cask macfika/claude-personas/claude-personas
 ```
 
-## Homebrew 安装（可选）
+## Install with Homebrew (optional)
 
-习惯使用 Homebrew 的用户也可以通过终端安装：
+If you prefer Homebrew, install from the terminal:
 
 ```bash
 brew tap macfika/claude-personas https://github.com/macfika/claude-personas
 brew install --cask macfika/claude-personas/claude-personas
 ```
 
-### 从 Homebrew 改为 DMG 安装
+### Switch from Homebrew to DMG
 
-先退出 Claude Personas，再运行普通卸载：
+Quit Claude Personas, then perform a normal uninstall:
 
 ```bash
 brew uninstall --cask macfika/claude-personas/claude-personas
 ```
 
-随后按上面的 DMG 步骤安装。**设置、配置列表和账号数据会保留**，之后可使用应用内自动更新。不要额外删除应用数据或使用清理工具清除设置；登录时启动和系统权限可能需要重新启用。
+Install using the DMG steps above. **Your settings, profile list, and account data are preserved**, and you can then use in-app automatic updates. Do not delete app data or use cleanup tools to erase settings. Launch at login and system permissions may need to be enabled again.
 
-## 数据与隐私
+## Data and privacy
 
-从列表移除配置不会删除其数据。默认账号数据位于 `~/Library/Application Support/Claude`，其他配置通常位于同级的 `Claude-<名称>`。删除数据前可在配置菜单中打开对应目录确认内容。
+Removing a profile from the list does not delete its data. The default account's data is stored in `~/Library/Application Support/Claude`; other profiles typically use sibling folders named `Claude-<name>`. Open a profile's data folder from its menu to check its contents before deleting anything.
 
-应用没有统计分析功能。管理配置和登录时会读取相关进程、配置文件、受支持的 shell alias 及 Claude 登录日志；检查更新时会连接 GitHub 获取更新。复制配置会同时复制其中的登录状态和聊天数据，请确认目标配置。
+The app has no analytics. To manage profiles and sign-ins, it reads relevant processes, configuration files, supported shell aliases, and Claude sign-in logs. Update checks connect to GitHub to retrieve updates. Duplicating a profile also copies its sign-in state and chat data, so check the destination profile.
 
-## 帮助与贡献
+## Help and contributing
 
-遇到问题请提交 [Issue](https://github.com/macfika/claude-personas/issues)，并注明 macOS 版本、应用版本和复现步骤。日志可能包含个人路径，分享前请检查。
+Report problems in an [Issue](https://github.com/macfika/claude-personas/issues), including your macOS version, app version, and steps to reproduce the problem. Logs may contain personal paths; review them before sharing.
 
-开发者请查看 [贡献指南](CONTRIBUTING.md)。
+Developers can refer to the [contributing guide](CONTRIBUTING.md).
 
-## 许可与归属
+## License and credits
 
-[Apache License 2.0](LICENSE)。基于 [MultiClaude](https://github.com/QuentinCar0n/multiclaude)，归属和第三方许可见 [NOTICE](NOTICE)。
+[Apache License 2.0](LICENSE). Based on [MultiClaude](https://github.com/QuentinCar0n/multiclaude). See [NOTICE](NOTICE) for credits and third-party license information.
 
-Claude 是 Anthropic 的商标。本项目是独立工具，与 Anthropic 无隶属、赞助或认可关系。
+Claude is a trademark of Anthropic. This is an independent project and is not affiliated with, sponsored by, or endorsed by Anthropic.
