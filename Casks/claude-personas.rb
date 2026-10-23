@@ -1,6 +1,6 @@
 cask "claude-personas" do
-  version "0.3.0"
-  sha256 "449febd5f6c7b705cb1bee71adf25cdae80e9aa300057960f71418ed69f41d5f"
+  version "0.3.1"
+  sha256 "b05a1f6176d000fc01d95b020a853da362e12bfdc01fb647c717a702522940f5"
 
   url "https://github.com/macfika/claude-personas/releases/download/v#{version}/ClaudePersonas-#{version}.zip"
   name "Claude Personas"
