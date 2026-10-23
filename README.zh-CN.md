@@ -8,7 +8,7 @@
 
 ## 安装（推荐 DMG）
 
-[**下载 Claude Personas DMG**](https://github.com/macfika/claude-personas/releases/download/v0.3.1/ClaudePersonas-0.3.1.dmg) · [查看最新版本](https://github.com/macfika/claude-personas/releases/latest)
+[**下载 Claude Personas DMG**](https://github.com/macfika/claude-personas/releases/download/v0.3.2/ClaudePersonas-0.3.2.dmg) · [查看最新版本](https://github.com/macfika/claude-personas/releases/latest)
 
 1. 下载后双击 DMG。
 2. 按窗口中的箭头，将 **Claude Personas** 拖到右侧 **Applications（应用程序）**。

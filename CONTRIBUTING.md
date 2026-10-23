@@ -27,6 +27,8 @@ DMG 构建工具固定使用 dmgbuild 1.6.7，通过 uv 或独立的 `.build/dmg
 
 运行构建、自测和与修改相关的人工步骤，参考 [功能对照及验收](docs/feature-parity.md)。PR 中说明改了什么、解决什么问题、运行了哪些检查，以及哪些行为没有实测。自测使用模拟登录日志、临时目录和测试 bundle，不应宣称它证明了真实 Google/SSO 登录、双账号隔离或 Claude 自更新恢复。
 
+修改进程退出识别时，还需在 macOS 图形登录会话运行 `./scripts/test-update-exit.sh`。它使用临时原生应用测试进程生前快照与退出后识别，不操作真实 Claude；这项检查补充普通自测未覆盖的 macOS 元数据生命周期。
+
 ```bash
 lipo -archs build/ClaudePersonas.app/Contents/MacOS/ClaudePersonas
 codesign --verify --deep --strict build/ClaudePersonas.app

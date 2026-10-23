@@ -9,6 +9,18 @@ import Carbon.HIToolbox
 import CryptoKit
 
 enum UpdateWatch {
+    // NSRunningApplication resolves launchDate lazily. An unread launchDate can become nil once
+    // the process exits, so retain its value while the process is still observable.
+    struct ProcessSnapshot {
+        let pid: pid_t
+        let launchedAt: Date
+
+        init(app: NSRunningApplication, observedAt: Date) {
+            pid = app.processIdentifier
+            launchedAt = app.launchDate ?? observedAt
+        }
+    }
+
     static func installedVersion() -> String? {
         let app = realClaudeApp()
         // Read the plist directly: Bundle caches its info dictionary and would miss the update.

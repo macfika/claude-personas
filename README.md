@@ -8,7 +8,7 @@ Requires **macOS 15 or later** and the official [Claude Desktop](https://claude.
 
 ## Install (DMG recommended)
 
-[**Download Claude Personas DMG**](https://github.com/macfika/claude-personas/releases/download/v0.3.1/ClaudePersonas-0.3.1.dmg) · [View the latest release](https://github.com/macfika/claude-personas/releases/latest)
+[**Download Claude Personas DMG**](https://github.com/macfika/claude-personas/releases/download/v0.3.2/ClaudePersonas-0.3.2.dmg) · [View the latest release](https://github.com/macfika/claude-personas/releases/latest)
 
 1. Download and double-click the DMG.
 2. Follow the arrow and drag **Claude Personas** into the **Applications** folder on the right.

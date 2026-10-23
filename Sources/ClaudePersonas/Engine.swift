@@ -30,6 +30,7 @@ final class Engine: ObservableObject {
     private var demoRunning: Set<UUID> = []
     private var claudeVersion = UpdateWatch.installedVersion()
     private var updatedAt: Date?
+    private var observedProcesses: [UUID: UpdateWatch.ProcessSnapshot] = [:]
     private var updateExits: Set<UUID> = []
     private var updateRecovery = UpdateRecovery()
     private var quitAt: [UUID: Date] = [:]    // profiles that stopped without ClaudePersonas quitting them
@@ -301,7 +302,9 @@ final class Engine: ObservableObject {
     // Matches each Claude process to a profile through its --user-data-dir argument.
     func refresh() {
         guard !isDemo else { return }
+        let now = Date()
         var found: [UUID: NSRunningApplication] = [:]
+        var observations: [UUID: UpdateWatch.ProcessSnapshot] = [:]
         for app in NSWorkspace.shared.runningApplications where app.bundleIdentifier == claudeBundleID && !app.isTerminated {
             let dir = ProcArgs.of(app.processIdentifier)
                 .first { $0.hasPrefix("--user-data-dir=") }
@@ -312,19 +315,23 @@ final class Engine: ObservableObject {
             }
             if let p = profiles.first(where: { $0.dir.map(Folders.canonical) == dir }) {
                 found[p.id] = app
+                observations[p.id] = UpdateWatch.ProcessSnapshot(app: app, observedAt: now)
+                if observedProcesses[p.id]?.pid != app.processIdentifier {
+                    Log.write("Observed Claude process for \(p.name), pid \(app.processIdentifier)")
+                }
             }
         }
         for id in found.keys { pending[id] = nil }
         pending = pending.filter { $0.value.timeIntervalSinceNow > -15 }
 
-        let now = Date()
         for id in running.keys where found[id] == nil {
             if userQuit.remove(id) == nil {
                 quitAt[id] = now
                 stopLog[id] = now
                 if let p = profiles.first(where: { $0.id == id }), !p.isDefault {
                     let reason = UpdateWatch.quitForUpdate(config: p.folderURL.appendingPathComponent("config.json"),
-                                                          launchedAt: running[id]?.launchDate, stoppedAt: now)
+                                                          launchedAt: observedProcesses[id]?.launchedAt, stoppedAt: now)
+                    Log.write("Claude stopped for \(p.name), pid \(observedProcesses[id]?.pid ?? 0), update exit: \(reason.map(String.init) ?? "unknown")")
                     if reason == true {
                         updateExits.insert(id)
                         Log.write("Claude update exit detected for \(p.name)")
@@ -337,6 +344,7 @@ final class Engine: ObservableObject {
                 }
             }
         }
+        observedProcesses = observations
         for id in found.keys { quitAt[id] = nil; updateExits.remove(id) }
         quitAt = quitAt.filter { now.timeIntervalSince($0.value) < 300 }
         updateExits.formIntersection(Set(quitAt.keys))
