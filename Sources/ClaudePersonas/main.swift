@@ -77,6 +77,14 @@ if args.count == 2, args[1] == "--selftest-update" {
         print(got == want ? "PASS" : "FAIL", name)
         ok = ok && got == want
     }
+    // Replay: a profile quits explicitly for another update hours after the last bundle change.
+    // The default instance is still running; neither the bundle version nor launch time changed.
+    let later = t0.addingTimeInterval(36_000)
+    let recovery = UpdateWatch.due(quitAt: [a: later], updatedAt: t0,
+                                   relaunched: false, now: later.addingTimeInterval(20), updateExits: [a])
+    let recovered = recovery == [a]
+    print(recovered ? "PASS" : "FAIL", "update exit without bundle replacement or default relaunch is recovered")
+    ok = ok && recovered
     let stops = [t0.addingTimeInterval(-3), t0.addingTimeInterval(-1)]
     let strays: [(String, Date?, Date?, [Date], Bool)] = [
         ("stray: default starts right after profiles stop", t0.addingTimeInterval(2), nil, stops, true),
@@ -100,6 +108,7 @@ if args.count == 2, args[1] == "--selftest-update" {
         print(got == want ? "PASS" : "FAIL", name)
         ok = ok && got == want
     }
+    ok = UpdateRecoveryTests.run() && ok
     exit(ok ? 0 : 1)
 }
 if args.count == 2, args[1] == "--installation-channel" {

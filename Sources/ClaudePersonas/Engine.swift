@@ -16,7 +16,10 @@ final class Engine: ObservableObject {
     @Published private(set) var profiles: [Profile]
     @Published private(set) var running: [UUID: NSRunningApplication] = [:]
     @Published private(set) var frontID: UUID?     // profile of the frontmost Claude window
-    @Published private var noticeProvider: (@MainActor () -> String)?
+    @Published private var noticeProvider: (@MainActor () -> String)? {
+        didSet { recoveryNoticeProfiles = [] }
+    }
+    private var recoveryNoticeProfiles: Set<UUID> = []
     var notice: String? { noticeProvider?() } // Render again in the currently selected language.
 
     var onChange: (() -> Void)?
@@ -27,6 +30,8 @@ final class Engine: ObservableObject {
     private var demoRunning: Set<UUID> = []
     private var claudeVersion = UpdateWatch.installedVersion()
     private var updatedAt: Date?
+    private var updateExits: Set<UUID> = []
+    private var updateRecovery = UpdateRecovery()
     private var quitAt: [UUID: Date] = [:]    // profiles that stopped without ClaudePersonas quitting them
     private var userQuit: Set<UUID> = []
     private var stopLog: [UUID: Date] = [:]   // last unrequested stop per profile, kept after it relaunches
@@ -317,10 +322,24 @@ final class Engine: ObservableObject {
             if userQuit.remove(id) == nil {
                 quitAt[id] = now
                 stopLog[id] = now
+                if let p = profiles.first(where: { $0.id == id }), !p.isDefault {
+                    let reason = UpdateWatch.quitForUpdate(config: p.folderURL.appendingPathComponent("config.json"),
+                                                          launchedAt: running[id]?.launchDate, stoppedAt: now)
+                    if reason == true {
+                        updateExits.insert(id)
+                        Log.write("Claude update exit detected for \(p.name)")
+                    } else if reason == false {
+                        // A normal quit during a retry must not be undone by recovery.
+                        updateRecovery.cancel(id)
+                        updateExits.remove(id)
+                        quitAt[id] = nil
+                    }
+                }
             }
         }
-        for id in found.keys { quitAt[id] = nil }
+        for id in found.keys { quitAt[id] = nil; updateExits.remove(id) }
         quitAt = quitAt.filter { now.timeIntervalSince($0.value) < 300 }
+        updateExits.formIntersection(Set(quitAt.keys))
         stopLog = stopLog.filter { now.timeIntervalSince($0.value) < 600 }
         if let v = UpdateWatch.installedVersion(), v != claudeVersion {
             claudeVersion = v
@@ -335,6 +354,7 @@ final class Engine: ObservableObject {
             frontID = newFront
             onChange?()
         }
+        if !recoveryNoticeProfiles.isSubset(of: Set(found.keys)) { noticeProvider = nil }
         if !isCLI { reopenAfterUpdate(now: now) }
         alignFolders()   // after `running` is current, so an open profile is never moved
     }
@@ -363,18 +383,48 @@ final class Engine: ObservableObject {
     // Claude relaunches itself without --user-data-dir when it installs an update, so profile windows
     // come back on the default account. Reopen each profile that stopped around the update.
     private func reopenAfterUpdate(now: Date) {
-        guard isOn(.reopenAfterUpdate), let updatedAt else { return }
-        let relaunched = running.values.contains { ($0.launchDate ?? .distantPast) > updatedAt.addingTimeInterval(-10) }
-        closeStrayDefault(updatedAt: updatedAt)
-        let due = UpdateWatch.due(quitAt: quitAt, updatedAt: updatedAt, relaunched: relaunched, now: now)
-        let reopen = profiles.filter { due.contains($0.id) && !$0.isDefault }
-        guard !reopen.isEmpty else { return }
-        for p in reopen {
-            quitAt[p.id] = nil
-            open(p)
+        guard isOn(.reopenAfterUpdate) else {
+            updateRecovery = UpdateRecovery()
+            updateExits = []
+            return
         }
-        noticeProvider = { L("Claude updated. Reopened %@.", Self.profileNames(reopen)) }
-        onChange?()
+        let relaunched = updatedAt.map { date in
+            running.values.contains { ($0.launchDate ?? .distantPast) > date.addingTimeInterval(-10) }
+        } ?? false
+        if let updatedAt { closeStrayDefault(updatedAt: updatedAt) }
+        let due = UpdateWatch.due(quitAt: quitAt, updatedAt: updatedAt ?? .distantPast,
+                                 relaunched: relaunched, now: now, updateExits: updateExits)
+        let eligible = Set(profiles.filter { due.contains($0.id) && !$0.isDefault }.map(\.id))
+        updateRecovery.enqueue(eligible)
+        for id in eligible { quitAt[id] = nil; updateExits.remove(id) }
+        for id in Array(updateRecovery.attempts.keys) where !profiles.contains(where: { $0.id == id }) {
+            updateRecovery.cancel(id)
+        }
+        let actions = updateRecovery.poll(running: running.mapValues(\.processIdentifier), now: now)
+        let launching = profiles.filter { actions.launch.contains($0.id) }
+        if !launching.isEmpty {
+            noticeProvider = { L("Claude exited for an update. Reopening %@…", Self.profileNames(launching)) }
+            for p in launching {
+                Log.write("Requesting update recovery for \(p.name), attempt \(updateRecovery.attempts[p.id]?.count ?? 0)")
+                open(p)
+            }
+        }
+        let confirmed = profiles.filter { actions.confirmed.contains($0.id) }
+        if !confirmed.isEmpty {
+            noticeProvider = { L("Claude exited for an update. Reopened %@.", Self.profileNames(confirmed)) }
+            recoveryNoticeProfiles = Set(confirmed.map(\.id))
+            for p in confirmed { Log.write("Update recovery confirmed for \(p.name)") }
+        }
+        let failed = profiles.filter { actions.failed.contains($0.id) }
+        if !failed.isEmpty {
+            noticeProvider = { L("Could not reopen %@ after Claude exited for an update. Open it manually to try again.", Self.profileNames(failed)) }
+            for p in failed {
+                quitAt[p.id] = nil
+                updateExits.remove(p.id)
+                Log.write("Update recovery failed for \(p.name) after 3 attempts")
+            }
+        }
+        if !launching.isEmpty || !confirmed.isEmpty || !failed.isEmpty { onChange?() }
     }
 
     func isRunning(_ p: Profile) -> Bool { running[p.id] != nil || demoRunning.contains(p.id) }
@@ -399,7 +449,15 @@ final class Engine: ObservableObject {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
         task.arguments = args
-        do { try task.run() } catch { NSSound.beep(); return }
+        task.terminationHandler = { process in
+            if process.terminationStatus != 0 {
+                Log.write("Launch request failed for \(p.name), open status \(process.terminationStatus)")
+            }
+        }
+        do { try task.run() } catch {
+            Log.write("Could not send launch request for \(p.name)")
+            NSSound.beep(); return
+        }
         objectWillChange.send()
         pending[p.id] = Date()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { Engine.shared.refresh() }
@@ -419,6 +477,9 @@ final class Engine: ObservableObject {
     }
 
     func quit(_ p: Profile) {
+        updateRecovery.cancel(p.id)
+        updateExits.remove(p.id)
+        quitAt[p.id] = nil
         if isDemo {
             demoRunning.remove(p.id); if frontID == p.id { frontID = nil }; objectWillChange.send(); onChange?(); return
         }

@@ -15,7 +15,7 @@
 "Cancel" = "取消";
 "Claude Personas" = "Claude Personas";
 "Claude Personas updated to %@." = "Claude Personas 已更新至 %@。";
-"Claude updated. Reopened %@." = "Claude 已更新。已重新開啟 %@。";
+"Claude exited for an update. Reopened %@." = "Claude 因更新結束執行。已重新開啟 %@。";
 "Collapsed" = "已收合";
 "Color" = "顏色";
 "Copied MCP servers (%@) from %@ to %@." = "已拷貝 %@ 個 MCP 伺服器，從 %@ 到 %@。";
@@ -114,3 +114,6 @@
 "Unable to check for updates: %@" = "無法檢查更新：%@";
 "Check for Updates…" = "檢查更新…";
 "Updates are disabled because this Homebrew installation record could not be verified." = "無法驗證此 Homebrew 安裝記錄，已停用自動更新。";
+
+"Claude exited for an update. Reopening %@…" = "Claude 因更新結束執行。正在重新開啟 %@…";
+"Could not reopen %@ after Claude exited for an update. Open it manually to try again." = "Claude 因更新結束執行後無法重新開啟 %@。請手動開啟重試。";

@@ -17,9 +17,8 @@ enum UpdateWatch {
         return short + "+" + (info?["CFBundleVersion"] as? String ?? "")
     }
 
-    // Profiles to reopen: stopped within 3 minutes of the version change, at least 4 s ago (so the new
-    // bundle is in place), and only when Claude relaunched itself. That last check skips the case where
-    // an update installs as someone quits Claude on purpose.
+    // Legacy fallback: nearby stops plus a Claude relaunch. Fresh per-profile update-exit records
+    // below also cover an updater waiting for another running instance to exit.
     // The default window is a stray when it started right after other profiles stopped for the update,
     // and the default itself did not stop around the update (so it was not open before).
     static func isStrayDefault(defaultLaunch: Date?, defaultStop: Date?, profileStops: [Date], updatedAt: Date) -> Bool {
@@ -30,9 +29,26 @@ enum UpdateWatch {
         return launch >= first.addingTimeInterval(-2) && launch <= last.addingTimeInterval(30)
     }
 
-    static func due(quitAt: [UUID: Date], updatedAt: Date, relaunched: Bool, now: Date) -> Set<UUID> {
-        guard relaunched else { return [] }
-        return Set(quitAt.filter { abs($0.value.timeIntervalSince(updatedAt)) < 180 && now.timeIntervalSince($0.value) >= 4 }.keys)
+    // Claude can quit for an update without replacing the bundle or relaunching the default.
+    // Accept only a fresh record from this process lifetime, never a previous launch's cleanup.
+    static func quitForUpdate(config: URL, launchedAt: Date?, stoppedAt: Date) -> Bool? {
+        guard let data = try? Data(contentsOf: config),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let cleanup = object["lastQuitCleanup"] as? [String: Any],
+              let forUpdate = cleanup["for_update"] as? Bool,
+              let epoch = cleanup["quit_epoch_ms"] as? Double,
+              let launchedAt else { return nil }
+        let quit = Date(timeIntervalSince1970: epoch / 1000)
+        guard quit >= launchedAt && abs(stoppedAt.timeIntervalSince(quit)) < 30 else { return nil }
+        return forUpdate
+    }
+
+    static func due(quitAt: [UUID: Date], updatedAt: Date, relaunched: Bool, now: Date, updateExits: Set<UUID> = []) -> Set<UUID> {
+        return Set(quitAt.filter { id, stopped in
+            let age = now.timeIntervalSince(stopped)
+            if updateExits.contains(id) { return age >= 15 && age < 300 }
+            return relaunched && abs(stopped.timeIntervalSince(updatedAt)) < 180 && age >= 4
+        }.keys)
     }
 }
 

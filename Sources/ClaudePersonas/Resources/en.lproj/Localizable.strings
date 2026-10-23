@@ -15,7 +15,7 @@
 "Cancel" = "Cancel";
 "Claude Personas" = "Claude Personas";
 "Claude Personas updated to %@." = "Claude Personas updated to %@.";
-"Claude updated. Reopened %@." = "Claude updated. Reopened %@.";
+"Claude exited for an update. Reopened %@." = "Claude exited for an update. Reopened %@.";
 "Collapsed" = "Collapsed";
 "Color" = "Color";
 "Copied MCP servers (%@) from %@ to %@." = "Copied MCP servers (%@) from %@ to %@.";
@@ -114,3 +114,6 @@
 "Unable to check for updates: %@" = "Unable to check for updates: %@";
 "Check for Updates…" = "Check for Updates…";
 "Updates are disabled because this Homebrew installation record could not be verified." = "Updates are disabled because this Homebrew installation record could not be verified.";
+
+"Claude exited for an update. Reopening %@…" = "Claude exited for an update. Reopening %@…";
+"Could not reopen %@ after Claude exited for an update. Open it manually to try again." = "Could not reopen %@ after Claude exited for an update. Open it manually to try again.";

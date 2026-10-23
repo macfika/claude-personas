@@ -15,7 +15,7 @@
 "Cancel" = "キャンセル";
 "Claude Personas" = "Claude Personas";
 "Claude Personas updated to %@." = "Claude Personas を %@ に更新しました。";
-"Claude updated. Reopened %@." = "Claude が更新されました。%@ を開き直しました。";
+"Claude exited for an update. Reopened %@." = "Claude が更新のため終了しました。%@ を再起動しました。";
 "Collapsed" = "折りたたみ";
 "Color" = "カラー";
 "Copied MCP servers (%@) from %@ to %@." = "MCP サーバー %@ 件を %@ から %@ にコピーしました。";
@@ -114,3 +114,6 @@
 "Unable to check for updates: %@" = "アップデートを確認できません：%@";
 "Check for Updates…" = "アップデートを確認…";
 "Updates are disabled because this Homebrew installation record could not be verified." = "この Homebrew のインストール記録を検証できないため、自動アップデートは無効になっています。";
+
+"Claude exited for an update. Reopening %@…" = "Claude が更新のため終了しました。%@ を再起動しています…";
+"Could not reopen %@ after Claude exited for an update. Open it manually to try again." = "Claude が更新のため終了した後、%@ を再起動できませんでした。手動で開いて再試行してください。";

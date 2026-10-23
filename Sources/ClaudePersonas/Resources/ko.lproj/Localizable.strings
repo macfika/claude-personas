@@ -15,7 +15,7 @@
 "Cancel" = "취소";
 "Claude Personas" = "Claude Personas";
 "Claude Personas updated to %@." = "Claude Personas가 %@ 버전으로 업데이트되었습니다.";
-"Claude updated. Reopened %@." = "Claude가 업데이트되어 %@을(를) 다시 열었습니다.";
+"Claude exited for an update. Reopened %@." = "Claude가 업데이트를 위해 종료되었습니다. %@을(를) 다시 열었습니다.";
 "Collapsed" = "접힘";
 "Color" = "색상";
 "Copied MCP servers (%@) from %@ to %@." = "MCP 서버 %@개를 %@에서 %@에 복사했습니다.";
@@ -114,3 +114,6 @@
 "Unable to check for updates: %@" = "업데이트를 확인할 수 없습니다: %@";
 "Check for Updates…" = "업데이트 확인…";
 "Updates are disabled because this Homebrew installation record could not be verified." = "이 Homebrew 설치 기록을 확인할 수 없어 자동 업데이트가 비활성화되었습니다.";
+
+"Claude exited for an update. Reopening %@…" = "Claude가 업데이트를 위해 종료되었습니다. %@ 다시 여는 중…";
+"Could not reopen %@ after Claude exited for an update. Open it manually to try again." = "Claude가 업데이트를 위해 종료된 후 %@을(를) 다시 열지 못했습니다. 수동으로 열어 다시 시도하세요.";
