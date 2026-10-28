@@ -35,8 +35,6 @@ final class Engine: ObservableObject {
     private var updateRecovery = UpdateRecovery()
     private var quitAt: [UUID: Date] = [:]    // profiles that stopped without ClaudePersonas quitting them
     private var userQuit: Set<UUID> = []
-    private var stopLog: [UUID: Date] = [:]   // last unrequested stop per profile, kept after it relaunches
-    private var strayHandled: Date?           // the update whose stray default window was already closed
     private var bareHandled: [UUID: Date] = [:]   // profile copies last reopened after a bare start
 
     private init() {
@@ -327,8 +325,7 @@ final class Engine: ObservableObject {
         for id in running.keys where found[id] == nil {
             if userQuit.remove(id) == nil {
                 quitAt[id] = now
-                stopLog[id] = now
-                if let p = profiles.first(where: { $0.id == id }), !p.isDefault {
+                if let p = profiles.first(where: { $0.id == id }) {
                     let reason = UpdateWatch.quitForUpdate(config: p.folderURL.appendingPathComponent("config.json"),
                                                           launchedAt: observedProcesses[id]?.launchedAt, stoppedAt: now)
                     Log.write("Claude stopped for \(p.name), pid \(observedProcesses[id]?.pid ?? 0), update exit: \(reason.map(String.init) ?? "unknown")")
@@ -348,7 +345,6 @@ final class Engine: ObservableObject {
         for id in found.keys { quitAt[id] = nil; updateExits.remove(id) }
         quitAt = quitAt.filter { now.timeIntervalSince($0.value) < 300 }
         updateExits.formIntersection(Set(quitAt.keys))
-        stopLog = stopLog.filter { now.timeIntervalSince($0.value) < 600 }
         if let v = UpdateWatch.installedVersion(), v != claudeVersion {
             claudeVersion = v
             updatedAt = now
@@ -399,10 +395,9 @@ final class Engine: ObservableObject {
         let relaunched = updatedAt.map { date in
             running.values.contains { ($0.launchDate ?? .distantPast) > date.addingTimeInterval(-10) }
         } ?? false
-        if let updatedAt { closeStrayDefault(updatedAt: updatedAt) }
         let due = UpdateWatch.due(quitAt: quitAt, updatedAt: updatedAt ?? .distantPast,
                                  relaunched: relaunched, now: now, updateExits: updateExits)
-        let eligible = Set(profiles.filter { due.contains($0.id) && !$0.isDefault }.map(\.id))
+        let eligible = Set(UpdateRecovery.profilesToRecover(profiles, due: due).map(\.id))
         updateRecovery.enqueue(eligible)
         for id in eligible { quitAt[id] = nil; updateExits.remove(id) }
         for id in Array(updateRecovery.attempts.keys) where !profiles.contains(where: { $0.id == id }) {
@@ -469,19 +464,6 @@ final class Engine: ObservableObject {
         objectWillChange.send()
         pending[p.id] = Date()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { Engine.shared.refresh() }
-    }
-
-    // Claude's relaunch after an update opens the default account even when it was not open before.
-    // Close that window, but only when the default did not stop around the update itself.
-    private func closeStrayDefault(updatedAt: Date) {
-        guard strayHandled != updatedAt, let d = profiles.first(where: \.isDefault), let app = running[d.id],
-              pending[d.id] == nil else { return }
-        let others = stopLog.filter { $0.key != d.id }.map(\.value)
-        guard UpdateWatch.isStrayDefault(defaultLaunch: app.launchDate, defaultStop: stopLog[d.id],
-                                         profileStops: others, updatedAt: updatedAt) else { return }
-        strayHandled = updatedAt
-        userQuit.insert(d.id)
-        app.terminate()
     }
 
     func quit(_ p: Profile) {

@@ -4,6 +4,10 @@ import Foundation
 // A launch request is not a successful recovery. Confirm the matching profile process survives
 // several polls, and retry failed/short-lived launches a bounded number of times.
 struct UpdateRecovery {
+    static func profilesToRecover(_ profiles: [Profile], due: Set<UUID>) -> [Profile] {
+        profiles.filter { due.contains($0.id) }
+    }
+
     struct Attempt {
         var count = 0
         var requestedAt: Date?

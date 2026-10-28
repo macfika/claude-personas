@@ -8,6 +8,14 @@ enum UpdateRecoveryTests {
             print(value ? "PASS" : "FAIL", name)
             ok = ok && value
         }
+        let defaultProfile = Profile(name: "Default")
+        let namedProfile = Profile(name: "Work", dir: "/temporary/Work")
+        let profiles = [defaultProfile, namedProfile]
+        let both = UpdateRecovery.profilesToRecover(profiles, due: [defaultProfile.id, namedProfile.id])
+        check("default and named update exits are both eligible", Set(both.map(\.id)) == Set(profiles.map(\.id)))
+        check("unaffected default is not opened", UpdateRecovery.profilesToRecover(profiles, due: [namedProfile.id]).map(\.id) == [namedProfile.id])
+        check("unaffected named profile is not opened", UpdateRecovery.profilesToRecover(profiles, due: [defaultProfile.id]).map(\.id) == [defaultProfile.id])
+        check("no update evidence opens no profiles", UpdateRecovery.profilesToRecover(profiles, due: []).isEmpty)
         let a = UUID(), other = UUID()
         let t = Date(timeIntervalSince1970: 1_000_000)
         var recovery = UpdateRecovery()

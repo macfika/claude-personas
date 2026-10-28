@@ -29,18 +29,6 @@ enum UpdateWatch {
         return short + "+" + (info?["CFBundleVersion"] as? String ?? "")
     }
 
-    // Legacy fallback: nearby stops plus a Claude relaunch. Fresh per-profile update-exit records
-    // below also cover an updater waiting for another running instance to exit.
-    // The default window is a stray when it started right after other profiles stopped for the update,
-    // and the default itself did not stop around the update (so it was not open before).
-    static func isStrayDefault(defaultLaunch: Date?, defaultStop: Date?, profileStops: [Date], updatedAt: Date) -> Bool {
-        guard let launch = defaultLaunch else { return false }
-        let near = profileStops.filter { abs($0.timeIntervalSince(updatedAt)) < 180 }
-        guard let first = near.min(), let last = near.max() else { return false }
-        if let defaultStop, abs(defaultStop.timeIntervalSince(updatedAt)) < 180 { return false }
-        return launch >= first.addingTimeInterval(-2) && launch <= last.addingTimeInterval(30)
-    }
-
     // Claude can quit for an update without replacing the bundle or relaunching the default.
     // Accept only a fresh record from this process lifetime, never a previous launch's cleanup.
     static func quitForUpdate(config: URL, launchedAt: Date?, stoppedAt: Date) -> Bool? {

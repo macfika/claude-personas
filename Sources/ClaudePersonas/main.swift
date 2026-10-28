@@ -85,19 +85,6 @@ if args.count == 2, args[1] == "--selftest-update" {
     let recovered = recovery == [a]
     print(recovered ? "PASS" : "FAIL", "update exit without bundle replacement or default relaunch is recovered")
     ok = ok && recovered
-    let stops = [t0.addingTimeInterval(-3), t0.addingTimeInterval(-1)]
-    let strays: [(String, Date?, Date?, [Date], Bool)] = [
-        ("stray: default starts right after profiles stop", t0.addingTimeInterval(2), nil, stops, true),
-        ("kept: default also stopped for the update", t0.addingTimeInterval(2), t0.addingTimeInterval(-2), stops, false),
-        ("kept: default opened a minute later by hand", t0.addingTimeInterval(60), nil, stops, false),
-        ("kept: default running since before the update", t0.addingTimeInterval(-3600), nil, stops, false),
-        ("kept: no profile stopped around the update", t0.addingTimeInterval(2), nil, [], false),
-    ]
-    for (name, launch, dstop, ps, want) in strays {
-        let got = UpdateWatch.isStrayDefault(defaultLaunch: launch, defaultStop: dstop, profileStops: ps, updatedAt: t0)
-        print(got == want ? "PASS" : "FAIL", name)
-        ok = ok && got == want
-    }
     let opens: [(String, String?, Bool, [String])] = [
         ("default, nothing running", nil, false, ["-a", "/A/Claude.app"]),
         ("default, another account running", nil, true, ["-n", "-a", "/A/Claude.app"]),
